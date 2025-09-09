@@ -112,7 +112,9 @@ public enum AppError: LocalizedError {
     
     public var isRetryable: Bool {
         switch self {
-        case .networkUnavailable, .timeout, .apiError(let code, _) where code >= 500:
+        case .networkUnavailable, .timeout:
+            return true
+        case .apiError(let code, _) where code >= 500:
             return true
         default:
             return false

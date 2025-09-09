@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 import CoreLocation
 import UserNotifications
 
@@ -119,7 +122,11 @@ public final class PermissionManager: NSObject {
     // MARK: - Background App Refresh
     
     public func checkBackgroundRefreshStatus() -> Bool {
+        #if canImport(UIKit)
         return UIApplication.shared.backgroundRefreshStatus == .available
+        #else
+        return false
+        #endif
     }
     
     // MARK: - Private Methods

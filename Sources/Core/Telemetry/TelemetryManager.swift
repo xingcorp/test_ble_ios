@@ -6,7 +6,12 @@
 //
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#else
+import AppKit
+#endif
+import Darwin.Mach
 
 /// Central telemetry manager for event tracking and metrics
 public final class TelemetryManager {
@@ -38,12 +43,19 @@ public final class TelemetryManager {
         guard isEnabled else { return }
         
         var enrichedMetadata = metadata
+        #if canImport(UIKit)
         enrichedMetadata["device_model"] = UIDevice.current.model
         enrichedMetadata["os_version"] = UIDevice.current.systemVersion
+        #else
+        enrichedMetadata["device_model"] = "Mac"
+        enrichedMetadata["os_version"] = ProcessInfo.processInfo.operatingSystemVersionString
+        #endif
         enrichedMetadata["app_version"] = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
         
         var enrichedMetrics = metrics ?? [:]
+        #if canImport(UIKit)
         enrichedMetrics[MetricKey.batteryLevel] = Double(UIDevice.current.batteryLevel)
+        #endif
         enrichedMetrics[MetricKey.memoryUsage] = performanceMonitor.currentMemoryUsage()
         
         let event = TelemetryEvent(

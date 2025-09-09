@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreLocation
+import BeaconAttendanceCore
 
 /// Orchestrates the entire attendance flow
 public final class AttendanceCoordinator {

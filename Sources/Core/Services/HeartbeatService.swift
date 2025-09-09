@@ -6,7 +6,12 @@
 //
 
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
+#if os(iOS)
 import BackgroundTasks
+#endif
 
 public protocol HeartbeatServiceDelegate: AnyObject {
     func heartbeatServiceDidTrigger()
@@ -36,7 +41,9 @@ public final class HeartbeatService {
     
     // State
     private var timer: Timer?
+    #if canImport(UIKit)
     private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier = .invalid
+    #endif
     private var lastHeartbeatTime: Date?
     private var isActive = false
     private let configuration: Configuration
@@ -71,10 +78,12 @@ public final class HeartbeatService {
         timer?.invalidate()
         timer = nil
         
+        #if canImport(UIKit)
         if backgroundTaskIdentifier != .invalid {
             UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
             backgroundTaskIdentifier = .invalid
         }
+        #endif
         
         Logger.info("HeartbeatService stopped")
         TelemetryManager.shared.track(.heartbeat, metadata: ["action": "stop"])
@@ -113,11 +122,13 @@ public final class HeartbeatService {
         // - Battery level
         // - Network conditions
         
+        #if canImport(UIKit)
         let batteryLevel = UIDevice.current.batteryLevel
         if batteryLevel > 0 && batteryLevel < AppConstants.Battery.lowThreshold {
             // Low battery - use max interval
             return configuration.maxInterval
         }
+        #endif
         
         // For now, use min interval when active
         return configuration.minInterval
@@ -134,6 +145,7 @@ public final class HeartbeatService {
     // MARK: - Background Task
     
     private func registerBackgroundTask() {
+        #if os(iOS)
         if #available(iOS 13.0, *) {
             BGTaskScheduler.shared.register(
                 forTaskWithIdentifier: taskIdentifier,
@@ -142,9 +154,11 @@ public final class HeartbeatService {
                 self?.handleBackgroundTask(task as! BGAppRefreshTask)
             }
         }
+        #endif
     }
     
     private func scheduleBackgroundHeartbeat() {
+        #if os(iOS)
         if #available(iOS 13.0, *) {
             let request = BGAppRefreshTaskRequest(identifier: taskIdentifier)
             request.earliestBeginDate = Date(timeIntervalSinceNow: configuration.maxInterval)
@@ -156,8 +170,10 @@ public final class HeartbeatService {
                 Logger.error("Failed to schedule background heartbeat: \(error)")
             }
         }
+        #endif
     }
     
+    #if os(iOS)
     @available(iOS 13.0, *)
     private func handleBackgroundTask(_ task: BGAppRefreshTask) {
         task.expirationHandler = {
@@ -175,16 +191,19 @@ public final class HeartbeatService {
         
         task.setTaskCompleted(success: true)
     }
+    #endif
     
     // MARK: - App Lifecycle
     
     public func handleAppDidEnterBackground() {
         guard isActive else { return }
         
+        #if canImport(UIKit)
         // Request background time to complete heartbeat
         backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask { [weak self] in
             self?.stop()
         }
+        #endif
         
         // Schedule background refresh
         if configuration.useBackgroundTask {

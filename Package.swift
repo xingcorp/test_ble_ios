@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "BeaconAttendance",
     platforms: [
-        .iOS(.v14)
+        .iOS(.v14),
+        .macOS(.v11)  // Add macOS support for command line build
     ],
     products: [
         .library(
@@ -25,17 +26,12 @@ let package = Package(
         .target(
             name: "BeaconAttendanceCore",
             dependencies: [],
-            path: "Sources/Core",
-            exclude: ["Info.plist"],
-            resources: [
-                // Add resource files if needed
-            ]
+            path: "Sources/Core"
         ),
         .target(
             name: "BeaconAttendanceFeatures",
             dependencies: ["BeaconAttendanceCore"],
-            path: "Sources/Features",
-            exclude: ["Info.plist"]
+            path: "Sources/Features"
         ),
         .target(
             name: "BeaconAttendanceApp",
@@ -43,8 +39,7 @@ let package = Package(
                 "BeaconAttendanceCore",
                 "BeaconAttendanceFeatures"
             ],
-            path: "Sources/App",
-            exclude: ["Info.plist"]
+            path: "Sources/App"
         ),
         .testTarget(
             name: "BeaconAttendanceCoreTests",

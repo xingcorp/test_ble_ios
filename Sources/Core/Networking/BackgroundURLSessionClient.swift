@@ -53,7 +53,7 @@ extension BackgroundURLSessionClient: URLSessionDelegate, URLSessionTaskDelegate
         
         // Clean up temp file if needed
         if let uploadTask = task as? URLSessionUploadTask,
-           let url = uploadTask.originalRequest?.url {
+           let _ = uploadTask.originalRequest?.url {
             // Cleanup logic here
         }
     }

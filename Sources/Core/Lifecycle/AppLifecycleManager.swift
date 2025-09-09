@@ -5,7 +5,11 @@
 //  Created by Senior iOS Team
 //
 
+#if canImport(UIKit)
 import UIKit
+#else
+import Foundation
+#endif
 
 public protocol AppLifecycleObserver: AnyObject {
     func appDidBecomeActive()
@@ -45,6 +49,7 @@ public final class AppLifecycleManager {
     // MARK: - Setup
     
     private func setupNotifications() {
+        #if canImport(UIKit)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(appDidBecomeActive),
@@ -79,6 +84,7 @@ public final class AppLifecycleManager {
             name: UIApplication.willTerminateNotification,
             object: nil
         )
+        #endif
     }
     
     // MARK: - Notification Handlers

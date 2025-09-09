@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import BeaconAttendanceCore
+import BeaconAttendanceFeatures
 
 public final class CompositionRoot {
     public static func build(baseURL: URL, userId: String) -> AppServices {

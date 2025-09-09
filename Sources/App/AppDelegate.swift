@@ -5,9 +5,13 @@
 //  Created by Senior iOS Team
 //
 
+import Foundation
+import BeaconAttendanceCore
+import BeaconAttendanceFeatures
+
+#if canImport(UIKit)
 import UIKit
 
-@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     private var services: AppServices!
@@ -62,4 +66,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         completionHandler()
     }
 }
+
+#else
+// Platform not supported for UIKit - AppDelegate requires UIKit
+#endif
 
