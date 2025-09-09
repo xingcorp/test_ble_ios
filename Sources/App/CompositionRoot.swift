@@ -23,6 +23,9 @@ public final class CompositionRoot {
         let notificationSink = NotificationSink()
         let sink = CompositeSink(sinks: [notificationSink]) // Can add API sink later
         
+        // Services
+        let heartbeatService = HeartbeatService(configuration: .default)
+        
         // Permission
         let permissionManager = PermissionManager()
         
@@ -33,7 +36,8 @@ public final class CompositionRoot {
             presenceStateMachine: presence,
             sessionManager: sessionManager,
             sink: sink,
-            slcsService: slcs
+            slcsService: slcs,
+            heartbeatService: heartbeatService
         )
         
         let services = AppServices(
@@ -47,7 +51,8 @@ public final class CompositionRoot {
             coordinator: coordinator,
             permissionManager: permissionManager,
             sessionManager: sessionManager,
-            sink: sink
+            sink: sink,
+            heartbeatService: heartbeatService
         )
         
         return services
@@ -66,6 +71,7 @@ public struct AppServices {
     public let permissionManager: PermissionManager
     public let sessionManager: SessionManager
     public let sink: AttendanceSink
+    public let heartbeatService: HeartbeatService
     
     init(region: BeaconRegionManager,
          ranger: ShortRanger,
@@ -77,7 +83,8 @@ public struct AppServices {
          coordinator: AttendanceCoordinator,
          permissionManager: PermissionManager,
          sessionManager: SessionManager,
-         sink: AttendanceSink) {
+         sink: AttendanceSink,
+         heartbeatService: HeartbeatService) {
         self.region = region
         self.ranger = ranger
         self.presence = presence
@@ -89,5 +96,6 @@ public struct AppServices {
         self.permissionManager = permissionManager
         self.sessionManager = sessionManager
         self.sink = sink
+        self.heartbeatService = heartbeatService
     }
 }

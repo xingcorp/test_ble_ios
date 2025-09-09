@@ -18,11 +18,12 @@ public final class AttendanceCoordinator {
     private let sessionManager: SessionManager
     private let sink: AttendanceSink
     private let slcsService: SLCSService
+    private let heartbeatService: HeartbeatService
     
     // State
     private var isRanging = false
     private var lastRangingTime: Date?
-    private let rangingDebounceInterval: TimeInterval = 30 // Prevent rapid ranging
+    private let rangingDebounceInterval: TimeInterval = AppConstants.Beacon.rangingDebounceInterval
     
     public init(
         regionManager: BeaconRegionManager,
@@ -30,7 +31,8 @@ public final class AttendanceCoordinator {
         presenceStateMachine: PresenceStateMachine,
         sessionManager: SessionManager,
         sink: AttendanceSink,
-        slcsService: SLCSService
+        slcsService: SLCSService,
+        heartbeatService: HeartbeatService
     ) {
         self.regionManager = regionManager
         self.ranger = ranger
@@ -38,6 +40,7 @@ public final class AttendanceCoordinator {
         self.sessionManager = sessionManager
         self.sink = sink
         self.slcsService = slcsService
+        self.heartbeatService = heartbeatService
         
         setupDelegates()
     }
@@ -47,6 +50,7 @@ public final class AttendanceCoordinator {
         ranger.delegate = self
         presenceStateMachine.actions = self
         slcsService.delegate = self
+        heartbeatService.delegate = self
     }
     
     // MARK: - Public Methods
@@ -71,6 +75,13 @@ extension AttendanceCoordinator: BeaconRegionManagerDelegate {
     public func didEnter(siteId: String) {
         Logger.info("🟢 Did enter site: \(siteId)")
         
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .regionEnter,
+            siteId: siteId,
+            metadata: ["trigger": "region_monitoring"]
+        )
+        
         // Notify state machine
         presenceStateMachine.onEnter(siteId: siteId)
         
@@ -80,6 +91,13 @@ extension AttendanceCoordinator: BeaconRegionManagerDelegate {
     
     public func didExit(siteId: String) {
         Logger.info("🔴 Did exit site: \(siteId)")
+        
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .regionExit,
+            siteId: siteId,
+            metadata: ["trigger": "region_monitoring"]
+        )
         
         // Stop any active ranging
         if isRanging {
@@ -122,6 +140,13 @@ extension AttendanceCoordinator: BeaconRegionManagerDelegate {
         isRanging = true
         lastRangingTime = Date()
         
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .rangingStart,
+            siteId: siteId,
+            metadata: ["reason": "enter_detection"]
+        )
+        
         // Create constraint for the site's UUID and major
         // For now using default UUID - in production, look up from site config
         let constraint = CLBeaconIdentityConstraint(
@@ -129,7 +154,7 @@ extension AttendanceCoordinator: BeaconRegionManagerDelegate {
             major: 100 // TODO: Get from site config
         )
         
-        ranger.start(constraints: [constraint], duration: 8.0)
+        ranger.start(constraints: [constraint], duration: AppConstants.Beacon.rangingDuration)
     }
 }
 
@@ -143,8 +168,18 @@ extension AttendanceCoordinator: ShortRangerDelegate {
         
         Logger.info("Ranging snapshot: \(beaconCount) beacons, nearest RSSI: \(nearestRSSI)")
         
+        // Track metrics
+        TelemetryManager.shared.track(
+            .rangingEnd,
+            severity: .verbose,
+            metrics: [
+                MetricKey.beaconCount: Double(beaconCount),
+                MetricKey.rssi: Double(nearestRSSI)
+            ]
+        )
+        
         // Check for soft-exit condition
-        if beaconCount == 0 || nearestRSSI < -85 {
+        if beaconCount == 0 || nearestRSSI < AppConstants.Beacon.rssiThresholdWeak {
             handleWeakSignal()
         } else {
             handleStrongSignal()
@@ -191,6 +226,17 @@ extension AttendanceCoordinator: PresenceActions {
             siteId: siteId,
             timestamp: timestamp
         )
+        
+        // Start heartbeat service
+        heartbeatService.start()
+        
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .checkIn,
+            sessionId: sessionId,
+            siteId: siteId,
+            metadata: ["reason": reason]
+        )
     }
     
     public func checkOut(siteId: String, reason: String) {
@@ -201,6 +247,9 @@ extension AttendanceCoordinator: PresenceActions {
             return
         }
         
+        // Stop heartbeat service
+        heartbeatService.stop()
+        
         let timestamp = Date()
         sessionManager.endSession()
         
@@ -209,6 +258,14 @@ extension AttendanceCoordinator: PresenceActions {
             siteId: siteId,
             timestamp: timestamp,
             reason: reason
+        )
+        
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .checkOut,
+            sessionId: session.sessionKey,
+            siteId: siteId,
+            metadata: ["reason": reason]
         )
     }
 }
@@ -225,5 +282,32 @@ extension AttendanceCoordinator: SLCSServiceDelegate {
         regionManager.regions.forEach { (_, region) in
             regionManager.manager.requestState(for: region)
         }
+    }
+}
+
+// MARK: - HeartbeatServiceDelegate
+
+extension AttendanceCoordinator: HeartbeatServiceDelegate {
+    
+    public func heartbeatServiceDidTrigger() {
+        guard let session = sessionManager.getCurrentSession() else { return }
+        
+        // Update session heartbeat
+        sessionManager.updateHeartbeat()
+        
+        // Send heartbeat notification
+        sink.handleHeartbeat(
+            sessionId: session.sessionKey,
+            siteId: session.siteId,
+            timestamp: Date()
+        )
+        
+        // Track telemetry
+        TelemetryManager.shared.track(
+            .heartbeat,
+            sessionId: session.sessionKey,
+            siteId: session.siteId,
+            metadata: ["source": "heartbeat_service"]
+        )
     }
 }

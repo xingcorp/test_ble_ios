@@ -13,7 +13,7 @@ public final class SessionManager {
     private let userId: String
     private var activeSession: LocalSession?
     
-    private let sessionKey = "active_session"
+    private let sessionKey = AppConstants.Storage.activeSessionKey
     
     public init(store: KeyValueStore, userId: String) {
         self.store = store

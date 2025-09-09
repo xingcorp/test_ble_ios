@@ -26,7 +26,7 @@ public final class NotificationSink: AttendanceSink {
         content.title = "✅ Checked In"
         content.body = "Site: \(siteId)\nTime: \(timeStr)"
         content.sound = .default
-        content.categoryIdentifier = "ATTENDANCE"
+        content.categoryIdentifier = AppConstants.Notification.categoryAttendance
         content.userInfo = [
             "type": "check-in",
             "sessionId": sessionId,
@@ -43,7 +43,7 @@ public final class NotificationSink: AttendanceSink {
         content.title = "👋 Checked Out"
         content.body = "Site: \(siteId)\nTime: \(timeStr)\nReason: \(reason)"
         content.sound = .default
-        content.categoryIdentifier = "ATTENDANCE"
+        content.categoryIdentifier = AppConstants.Notification.categoryAttendance
         content.userInfo = [
             "type": "check-out",
             "sessionId": sessionId,
@@ -67,7 +67,7 @@ public final class NotificationSink: AttendanceSink {
     }
     
     private func scheduleNotification(content: UNMutableNotificationContent, identifier: String) {
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: AppConstants.Notification.notificationDelay, repeats: false)
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         notificationCenter.add(request) { error in

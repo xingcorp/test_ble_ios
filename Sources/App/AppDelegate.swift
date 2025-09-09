@@ -13,10 +13,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private var services: AppServices!
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Initialize lifecycle manager
+        _ = AppLifecycleManager.shared
+        
         // Initialize services with a default user ID (in production, get from login)
-        let userId = UserDefaults.standard.string(forKey: "userId") ?? "demo-user"
+        let userId = UserDefaults.standard.string(forKey: AppConstants.Storage.userIdKey) ?? "demo-user"
+        
+        // Register dependencies
+        DependencyContainer.registerAppDependencies(userId: userId)
+        
+        // Build services
         services = CompositionRoot.build(
-            baseURL: URL(string: "https://api.example.com")!,
+            baseURL: URL(string: AppConstants.API.baseURL)!,
             userId: userId
         )
         
