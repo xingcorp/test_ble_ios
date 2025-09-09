@@ -1,0 +1,175 @@
+//
+//  PermissionManager.swift
+//  BeaconAttendance
+//
+//  Created by Senior iOS Team
+//
+
+import Foundation
+import CoreLocation
+import UserNotifications
+
+public enum PermissionStatus {
+    case notDetermined
+    case authorized
+    case denied
+    case restricted
+}
+
+public protocol PermissionManagerDelegate: AnyObject {
+    func permissionManager(_ manager: PermissionManager, didUpdateLocationStatus: PermissionStatus)
+    func permissionManager(_ manager: PermissionManager, didUpdateNotificationStatus: PermissionStatus)
+}
+
+/// Manages all app permissions in a centralized way
+public final class PermissionManager: NSObject {
+    
+    public weak var delegate: PermissionManagerDelegate?
+    
+    private let locationManager = CLLocationManager()
+    private let notificationCenter = UNUserNotificationCenter.current()
+    
+    public override init() {
+        super.init()
+        locationManager.delegate = self
+    }
+    
+    // MARK: - Location Permission
+    
+    public func requestLocationPermission() {
+        let status = locationManager.authorizationStatus
+        
+        switch status {
+        case .notDetermined:
+            // First request When In Use
+            locationManager.requestWhenInUseAuthorization()
+        case .authorizedWhenInUse:
+            // Then upgrade to Always
+            locationManager.requestAlwaysAuthorization()
+        case .authorizedAlways:
+            Logger.info("Already have Always location permission")
+            delegate?.permissionManager(self, didUpdateLocationStatus: .authorized)
+        case .denied, .restricted:
+            Logger.error("Location permission denied/restricted")
+            delegate?.permissionManager(self, didUpdateLocationStatus: .denied)
+            showLocationSettingsAlert()
+        @unknown default:
+            break
+        }
+    }
+    
+    public func checkLocationStatus() -> PermissionStatus {
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            return .notDetermined
+        case .authorizedAlways:
+            return .authorized
+        case .authorizedWhenInUse:
+            return .authorized // But will request upgrade
+        case .denied:
+            return .denied
+        case .restricted:
+            return .restricted
+        @unknown default:
+            return .notDetermined
+        }
+    }
+    
+    // MARK: - Notification Permission
+    
+    public func requestNotificationPermission(completion: @escaping (Bool) -> Void) {
+        notificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    Logger.error("Notification permission error: \(error)")
+                    completion(false)
+                } else {
+                    Logger.info("Notification permission: \(granted ? "granted" : "denied")")
+                    completion(granted)
+                    
+                    let status: PermissionStatus = granted ? .authorized : .denied
+                    self.delegate?.permissionManager(self, didUpdateNotificationStatus: status)
+                }
+            }
+        }
+        
+        // Register notification categories
+        registerNotificationCategories()
+    }
+    
+    public func checkNotificationStatus(completion: @escaping (PermissionStatus) -> Void) {
+        notificationCenter.getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                let status: PermissionStatus
+                switch settings.authorizationStatus {
+                case .notDetermined:
+                    status = .notDetermined
+                case .authorized, .provisional, .ephemeral:
+                    status = .authorized
+                case .denied:
+                    status = .denied
+                @unknown default:
+                    status = .notDetermined
+                }
+                completion(status)
+            }
+        }
+    }
+    
+    // MARK: - Background App Refresh
+    
+    public func checkBackgroundRefreshStatus() -> Bool {
+        return UIApplication.shared.backgroundRefreshStatus == .available
+    }
+    
+    // MARK: - Private Methods
+    
+    private func registerNotificationCategories() {
+        let checkInAction = UNNotificationAction(
+            identifier: "VIEW_DETAILS",
+            title: "View Details",
+            options: [.foreground]
+        )
+        
+        let category = UNNotificationCategory(
+            identifier: "ATTENDANCE",
+            actions: [checkInAction],
+            intentIdentifiers: [],
+            options: []
+        )
+        
+        notificationCenter.setNotificationCategories([category])
+    }
+    
+    private func showLocationSettingsAlert() {
+        // In a real app, present an alert to guide user to Settings
+        Logger.warn("User needs to enable Location in Settings")
+    }
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension PermissionManager: CLLocationManagerDelegate {
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        let permissionStatus: PermissionStatus
+        
+        switch status {
+        case .notDetermined:
+            permissionStatus = .notDetermined
+        case .authorizedAlways:
+            permissionStatus = .authorized
+        case .authorizedWhenInUse:
+            // Request upgrade to Always
+            locationManager.requestAlwaysAuthorization()
+            permissionStatus = .authorized
+        case .denied:
+            permissionStatus = .denied
+        case .restricted:
+            permissionStatus = .restricted
+        @unknown default:
+            permissionStatus = .notDetermined
+        }
+        
+        delegate?.permissionManager(self, didUpdateLocationStatus: permissionStatus)
+    }
+}

@@ -31,8 +31,8 @@ public struct SiteRegion: Hashable {
 
 /// Monitors iBeacon regions (UUID or UUID+major). Handles app relaunch on region events.
 public final class BeaconRegionManager: NSObject {
-    private let manager = CLLocationManager()
-    private var regions: [String: CLBeaconRegion] = [:] // key = siteId
+    public let manager = CLLocationManager() // Made public for AttendanceCoordinator
+    public private(set) var regions: [String: CLBeaconRegion] = [:] // key = siteId
     public weak var delegate: BeaconRegionManagerDelegate?
     
     public override init() {
@@ -73,9 +73,6 @@ public final class BeaconRegionManager: NSObject {
             manager.requestState(for: region)
         }
     }
-    
-}
-
 }
 
 extension BeaconRegionManager: CLLocationManagerDelegate {
