@@ -7,8 +7,9 @@
 
 import UIKit
 // Note: Import statements for packages will be added when creating Xcode project
-import BeaconAttendanceCore
-import BeaconAttendanceFeatures
+// TODO: Uncomment when package is added to project
+// import BeaconAttendanceCore
+// import BeaconAttendanceFeatures
 
 class AttendanceViewController: UIViewController {
     

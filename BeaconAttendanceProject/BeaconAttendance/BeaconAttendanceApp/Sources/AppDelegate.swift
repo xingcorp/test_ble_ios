@@ -7,8 +7,9 @@
 
 import UIKit
 // Note: Uncomment these when adding packages in Xcode
-import BeaconAttendanceCore
-import BeaconAttendanceFeatures
+// TODO: Add these when package is configured
+// import BeaconAttendanceCore
+// import BeaconAttendanceFeatures
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

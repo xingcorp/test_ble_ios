@@ -1,0 +1,683 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5A9B2D272E704AD70036DCFA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A9B2D202E704AD70036DCFA /* LaunchScreen.storyboard */; };
+		5A9B2D282E704AD70036DCFA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A9B2D1E2E704AD70036DCFA /* Assets.xcassets */; };
+		5A9B2D292E704AD70036DCFA /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5A9B2D1F2E704AD70036DCFA /* Info.plist */; };
+		5A9B2D2A2E704AD70036DCFA /* AttendanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B2D232E704AD70036DCFA /* AttendanceViewController.swift */; };
+		5A9B2D2B2E704AD70036DCFA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B2D222E704AD70036DCFA /* AppDelegate.swift */; };
+		5A9B2D2C2E704AD70036DCFA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B2D242E704AD70036DCFA /* SceneDelegate.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5A9B2D022E7034580036DCFA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5A9B2CE82E7034560036DCFA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A9B2CEF2E7034560036DCFA;
+			remoteInfo = BeaconAttendance;
+		};
+		5A9B2D0C2E7034580036DCFA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5A9B2CE82E7034560036DCFA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A9B2CEF2E7034560036DCFA;
+			remoteInfo = BeaconAttendance;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5A9B2CF02E7034560036DCFA /* BeaconAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeaconAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A9B2D012E7034580036DCFA /* BeaconAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeaconAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A9B2D0B2E7034580036DCFA /* BeaconAttendanceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeaconAttendanceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A9B2D1E2E704AD70036DCFA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5A9B2D1F2E704AD70036DCFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5A9B2D202E704AD70036DCFA /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5A9B2D222E704AD70036DCFA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		5A9B2D232E704AD70036DCFA /* AttendanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceViewController.swift; sourceTree = "<group>"; };
+		5A9B2D242E704AD70036DCFA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5A9B2CF22E7034560036DCFA /* BeaconAttendance */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BeaconAttendance;
+			sourceTree = "<group>";
+		};
+		5A9B2D042E7034580036DCFA /* BeaconAttendanceTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BeaconAttendanceTests;
+			sourceTree = "<group>";
+		};
+		5A9B2D0E2E7034580036DCFA /* BeaconAttendanceUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BeaconAttendanceUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5A9B2CED2E7034560036DCFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2CFE2E7034580036DCFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2D082E7034580036DCFA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5A9B2CE72E7034560036DCFA = {
+			isa = PBXGroup;
+			children = (
+				5A9B2D262E704AD70036DCFA /* BeaconAttendanceApp */,
+				5A9B2CF22E7034560036DCFA /* BeaconAttendance */,
+				5A9B2D042E7034580036DCFA /* BeaconAttendanceTests */,
+				5A9B2D0E2E7034580036DCFA /* BeaconAttendanceUITests */,
+				5A9B2CF12E7034560036DCFA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5A9B2CF12E7034560036DCFA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5A9B2CF02E7034560036DCFA /* BeaconAttendance.app */,
+				5A9B2D012E7034580036DCFA /* BeaconAttendanceTests.xctest */,
+				5A9B2D0B2E7034580036DCFA /* BeaconAttendanceUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5A9B2D212E704AD70036DCFA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5A9B2D1E2E704AD70036DCFA /* Assets.xcassets */,
+				5A9B2D1F2E704AD70036DCFA /* Info.plist */,
+				5A9B2D202E704AD70036DCFA /* LaunchScreen.storyboard */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		5A9B2D252E704AD70036DCFA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5A9B2D222E704AD70036DCFA /* AppDelegate.swift */,
+				5A9B2D232E704AD70036DCFA /* AttendanceViewController.swift */,
+				5A9B2D242E704AD70036DCFA /* SceneDelegate.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		5A9B2D262E704AD70036DCFA /* BeaconAttendanceApp */ = {
+			isa = PBXGroup;
+			children = (
+				5A9B2D212E704AD70036DCFA /* Resources */,
+				5A9B2D252E704AD70036DCFA /* Sources */,
+			);
+			path = BeaconAttendanceApp;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5A9B2CEF2E7034560036DCFA /* BeaconAttendance */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A9B2D152E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendance" */;
+			buildPhases = (
+				5A9B2CEC2E7034560036DCFA /* Sources */,
+				5A9B2CED2E7034560036DCFA /* Frameworks */,
+				5A9B2CEE2E7034560036DCFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5A9B2CF22E7034560036DCFA /* BeaconAttendance */,
+			);
+			name = BeaconAttendance;
+			packageProductDependencies = (
+			);
+			productName = BeaconAttendance;
+			productReference = 5A9B2CF02E7034560036DCFA /* BeaconAttendance.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5A9B2D002E7034580036DCFA /* BeaconAttendanceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A9B2D182E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendanceTests" */;
+			buildPhases = (
+				5A9B2CFD2E7034580036DCFA /* Sources */,
+				5A9B2CFE2E7034580036DCFA /* Frameworks */,
+				5A9B2CFF2E7034580036DCFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A9B2D032E7034580036DCFA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5A9B2D042E7034580036DCFA /* BeaconAttendanceTests */,
+			);
+			name = BeaconAttendanceTests;
+			packageProductDependencies = (
+			);
+			productName = BeaconAttendanceTests;
+			productReference = 5A9B2D012E7034580036DCFA /* BeaconAttendanceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5A9B2D0A2E7034580036DCFA /* BeaconAttendanceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A9B2D1B2E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendanceUITests" */;
+			buildPhases = (
+				5A9B2D072E7034580036DCFA /* Sources */,
+				5A9B2D082E7034580036DCFA /* Frameworks */,
+				5A9B2D092E7034580036DCFA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A9B2D0D2E7034580036DCFA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5A9B2D0E2E7034580036DCFA /* BeaconAttendanceUITests */,
+			);
+			name = BeaconAttendanceUITests;
+			packageProductDependencies = (
+			);
+			productName = BeaconAttendanceUITests;
+			productReference = 5A9B2D0B2E7034580036DCFA /* BeaconAttendanceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5A9B2CE82E7034560036DCFA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1610;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					5A9B2CEF2E7034560036DCFA = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					5A9B2D002E7034580036DCFA = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 5A9B2CEF2E7034560036DCFA;
+					};
+					5A9B2D0A2E7034580036DCFA = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 5A9B2CEF2E7034560036DCFA;
+					};
+				};
+			};
+			buildConfigurationList = 5A9B2CEB2E7034560036DCFA /* Build configuration list for PBXProject "BeaconAttendance" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5A9B2CE72E7034560036DCFA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5A9B2D2D2E704CA30036DCFA /* XCLocalSwiftPackageReference "../../../test_ble_ios" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5A9B2CF12E7034560036DCFA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5A9B2CEF2E7034560036DCFA /* BeaconAttendance */,
+				5A9B2D002E7034580036DCFA /* BeaconAttendanceTests */,
+				5A9B2D0A2E7034580036DCFA /* BeaconAttendanceUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5A9B2CEE2E7034560036DCFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A9B2D272E704AD70036DCFA /* LaunchScreen.storyboard in Resources */,
+				5A9B2D282E704AD70036DCFA /* Assets.xcassets in Resources */,
+				5A9B2D292E704AD70036DCFA /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2CFF2E7034580036DCFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2D092E7034580036DCFA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5A9B2CEC2E7034560036DCFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A9B2D2A2E704AD70036DCFA /* AttendanceViewController.swift in Sources */,
+				5A9B2D2B2E704AD70036DCFA /* AppDelegate.swift in Sources */,
+				5A9B2D2C2E704AD70036DCFA /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2CFD2E7034580036DCFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A9B2D072E7034580036DCFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5A9B2D032E7034580036DCFA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A9B2CEF2E7034560036DCFA /* BeaconAttendance */;
+			targetProxy = 5A9B2D022E7034580036DCFA /* PBXContainerItemProxy */;
+		};
+		5A9B2D0D2E7034580036DCFA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A9B2CEF2E7034560036DCFA /* BeaconAttendance */;
+			targetProxy = 5A9B2D0C2E7034580036DCFA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5A9B2D132E7034580036DCFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5A9B2D142E7034580036DCFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		5A9B2D162E7034580036DCFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BeaconAttendance/Preview Content\"";
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BeaconAttendanceApp/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Beacon Attendance";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Beacon Attendance uses Bluetooth to detect proximity beacons for accurate attendance tracking.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Beacon Attendance uses Bluetooth to communicate with attendance beacons.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Need location for beacon detection";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Need background location for attendance";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Need location for beacon detection";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 location-services bluetooth-le";
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.soffice.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Debug;
+		};
+		5A9B2D172E7034580036DCFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"BeaconAttendance/Preview Content\"";
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BeaconAttendanceApp/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Beacon Attendance";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Beacon Attendance uses Bluetooth to detect proximity beacons for accurate attendance tracking.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Beacon Attendance uses Bluetooth to communicate with attendance beacons.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Need location for beacon detection";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Need background location for attendance";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Need location for beacon detection";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 location-services bluetooth-le";
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.soffice.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Release;
+		};
+		5A9B2D192E7034580036DCFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance.BeaconAttendanceTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeaconAttendance.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeaconAttendance";
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Debug;
+		};
+		5A9B2D1A2E7034580036DCFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance.BeaconAttendanceTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BeaconAttendance.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BeaconAttendance";
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Release;
+		};
+		5A9B2D1C2E7034580036DCFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance.BeaconAttendanceUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = BeaconAttendance;
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Debug;
+		};
+		5A9B2D1D2E7034580036DCFA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L3FP5738Q7;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance.BeaconAttendanceUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = BeaconAttendance;
+				XROS_DEPLOYMENT_TARGET = 2.1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5A9B2CEB2E7034560036DCFA /* Build configuration list for PBXProject "BeaconAttendance" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A9B2D132E7034580036DCFA /* Debug */,
+				5A9B2D142E7034580036DCFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A9B2D152E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendance" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A9B2D162E7034580036DCFA /* Debug */,
+				5A9B2D172E7034580036DCFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A9B2D182E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendanceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A9B2D192E7034580036DCFA /* Debug */,
+				5A9B2D1A2E7034580036DCFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A9B2D1B2E7034580036DCFA /* Build configuration list for PBXNativeTarget "BeaconAttendanceUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A9B2D1C2E7034580036DCFA /* Debug */,
+				5A9B2D1D2E7034580036DCFA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5A9B2D2D2E704CA30036DCFA /* XCLocalSwiftPackageReference "../../../test_ble_ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../test_ble_ios;
+		};
+/* End XCLocalSwiftPackageReference section */
+	};
+	rootObject = 5A9B2CE82E7034560036DCFA /* Project object */;
+}
