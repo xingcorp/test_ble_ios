@@ -6,7 +6,9 @@
 //
 
 import Foundation
+#if os(iOS)
 import BackgroundTasks
+#endif
 
 /// Service for managing background tasks
 public final class BackgroundTaskService {
@@ -35,6 +37,7 @@ public final class BackgroundTaskService {
             return 
         }
         
+        #if os(iOS)
         // Register beacon sync task
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: beaconSyncTaskId,
@@ -66,10 +69,15 @@ public final class BackgroundTaskService {
         scheduleBeaconSync()
         scheduleDataSync()
         scheduleCleanup()
+        #else
+        LoggerService.shared.warning("Background tasks not available on this platform")
+        isRegistered = true
+        #endif
     }
     
     /// Schedule beacon sync task
     public func scheduleBeaconSync() {
+        #if os(iOS)
         let request = BGAppRefreshTaskRequest(identifier: beaconSyncTaskId)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 minutes
         
@@ -79,10 +87,14 @@ public final class BackgroundTaskService {
         } catch {
             LoggerService.shared.error("Failed to schedule beacon sync: \(error.localizedDescription)")
         }
+        #else
+        LoggerService.shared.debug("Background tasks not available - skipping beacon sync")
+        #endif
     }
     
     /// Schedule data sync task
     public func scheduleDataSync() {
+        #if os(iOS)
         let request = BGProcessingTaskRequest(identifier: dataSyncTaskId)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 60 * 60) // 1 hour
         request.requiresNetworkConnectivity = true
@@ -94,10 +106,14 @@ public final class BackgroundTaskService {
         } catch {
             LoggerService.shared.error("Failed to schedule data sync: \(error.localizedDescription)")
         }
+        #else
+        LoggerService.shared.debug("Background tasks not available - skipping data sync")
+        #endif
     }
     
     /// Schedule cleanup task
     public func scheduleCleanup() {
+        #if os(iOS)
         let request = BGProcessingTaskRequest(identifier: cleanupTaskId)
         request.earliestBeginDate = Date(timeIntervalSinceNow: 24 * 60 * 60) // 24 hours
         request.requiresNetworkConnectivity = false
@@ -109,10 +125,14 @@ public final class BackgroundTaskService {
         } catch {
             LoggerService.shared.error("Failed to schedule cleanup: \(error.localizedDescription)")
         }
+        #else
+        LoggerService.shared.debug("Background tasks not available - skipping cleanup")
+        #endif
     }
     
     // MARK: - Task Handlers
     
+    #if os(iOS)
     private func handleBeaconSync(task: BGAppRefreshTask) {
         LoggerService.shared.info("Starting beacon sync background task")
         
@@ -173,17 +193,28 @@ public final class BackgroundTaskService {
             self.scheduleCleanup()
         }
     }
+    #endif
     
     /// Cancel all pending tasks
     public func cancelAllTasks() {
+        #if os(iOS)
         BGTaskScheduler.shared.cancelAllTaskRequests()
         LoggerService.shared.info("All background tasks cancelled")
+        #else
+        LoggerService.shared.debug("Background tasks not available - nothing to cancel")
+        #endif
     }
     
     /// Get pending task requests (for debugging)
+    #if os(iOS)
     public func getPendingTasks(completion: @escaping ([BGTaskRequest]) -> Void) {
         BGTaskScheduler.shared.getPendingTaskRequests { requests in
             completion(requests)
         }
     }
+    #else
+    public func getPendingTasks(completion: @escaping ([Any]) -> Void) {
+        completion([]) // Return empty array on platforms without BackgroundTasks
+    }
+    #endif
 }
