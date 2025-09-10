@@ -191,6 +191,44 @@ public final class AppConfiguration {
         LoggerService.shared.info("🚀 App Configuration initialized - Environment: \(environment.rawValue)")
     }
     
+    // MARK: - Validation
+    
+    /// Validate configuration
+    public func validate() -> Bool {
+        // Check if essential configurations are valid
+        guard !api.baseURL.absoluteString.isEmpty else {
+            LoggerService.shared.error("Invalid API base URL")
+            return false
+        }
+        
+        guard !beacon.defaultUUID.isEmpty else {
+            LoggerService.shared.error("Invalid beacon UUID")
+            return false
+        }
+        
+        return true
+    }
+    
+    // MARK: - Debug Info
+    
+    /// Get debug information about configuration
+    public var debugInfo: String {
+        """
+        Configuration Debug Info:
+        - Environment: \(environment.rawValue)
+        - App Version: \(appVersion) (\(buildNumber))
+        - Device ID: \(deviceId)
+        - API Base URL: \(api.baseURL.absoluteString)
+        - Beacon UUID: \(beacon.defaultUUID)
+        - Features:
+          • Beacon Ranging: \(features.isBeaconRangingEnabled)
+          • Background Sync: \(features.isBackgroundSyncEnabled)
+          • Offline Mode: \(features.isOfflineModeEnabled)
+          • Analytics: \(features.isAnalyticsEnabled)
+          • Debug Menu: \(features.isDebugMenuEnabled)
+        """
+    }
+    
     // MARK: - Device ID Management
     
     private static func getOrCreateDeviceId() -> String {
@@ -219,52 +257,11 @@ public final class AppConfiguration {
         }
     }
     
-    // MARK: - Debug Info
-    
-    public var debugInfo: String {
-        """
-        Environment: \(environment.rawValue)
-        App Version: \(appVersion) (\(buildNumber))
-        Device ID: \(deviceId)
-        API: \(api.baseURL.absoluteString)
-        Beacon UUID: \(beacon.defaultUUID)
-        Features:
-        - Beacon Ranging: \(features.isBeaconRangingEnabled)
-        - Background Sync: \(features.isBackgroundSyncEnabled)
-        - Offline Mode: \(features.isOfflineModeEnabled)
-        - Analytics: \(features.isAnalyticsEnabled)
-        - Crash Reporting: \(features.isCrashReportingEnabled)
-        """
-    }
 }
 
-// MARK: - Configuration Validator
+// MARK: - Configuration Extensions
 
 public extension AppConfiguration {
-    
-    /// Validate configuration on app start
-    func validate() -> Bool {
-        var isValid = true
-        
-        // Check API endpoint reachability
-        if api.baseURL.absoluteString.isEmpty {
-            LoggerService.shared.error("Invalid API base URL")
-            isValid = false
-        }
-        
-        // Validate UUID format
-        if UUID(uuidString: beacon.defaultUUID) == nil {
-            LoggerService.shared.error("Invalid beacon UUID format")
-            isValid = false
-        }
-        
-        // Check critical features
-        if !features.isBeaconRangingEnabled && environment == .production {
-            LoggerService.shared.warning("Beacon ranging disabled in production")
-        }
-        
-        return isValid
-    }
     
     /// Check if specific feature is enabled
     func isFeatureEnabled(_ feature: String) -> Bool {

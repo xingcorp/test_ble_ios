@@ -7,7 +7,6 @@
 
 import Foundation
 import CoreLocation
-import BeaconAttendanceFeatures
 
 /// Concrete implementation of AttendanceServiceProtocol
 public final class AttendanceService: AttendanceServiceProtocol {
@@ -133,28 +132,6 @@ public final class AttendanceService: AttendanceServiceProtocol {
             LoggerService.shared.warning("Failed to validate beacon online: \(error.localizedDescription)")
             // Fallback to offline validation
             return AppConfiguration.shared.beacon.defaultUUID == beaconId
-        }
-    }
-}
-
-// MARK: - Supporting Types
-
-enum AttendanceError: LocalizedError {
-    case alreadyCheckedIn
-    case sessionNotFound
-    case invalidBeacon
-    case networkError(String)
-    
-    var errorDescription: String? {
-        switch self {
-        case .alreadyCheckedIn:
-            return "You are already checked in"
-        case .sessionNotFound:
-            return "Session not found"
-        case .invalidBeacon:
-            return "Invalid beacon"
-        case .networkError(let message):
-            return "Network error: \(message)"
         }
     }
 }

@@ -99,55 +99,31 @@ public extension DependencyContainer {
         let container = DependencyContainer.shared
         
         // Core Services
-        container.registerSingleton(KeyValueStore.self) {
-            UserDefaultsStore()
+        container.registerSingleton(LoggerService.self) {
+            LoggerService.shared
         }
         
-        container.registerSingleton(TelemetryManager.self) {
-            TelemetryManager.shared
+        container.registerSingleton(BackgroundTaskService.self) {
+            BackgroundTaskService.shared
         }
         
-        container.registerSingleton(ConfigurationManager.self) {
-            ConfigurationManager.shared
+        container.registerSingleton(NotificationManager.self) {
+            NotificationManager.shared
         }
         
         // Beacon Services
-        container.registerSingleton(BeaconRegionManager.self) {
-            BeaconRegionManager()
+        container.registerSingleton(BeaconManagerProtocol.self) {
+            BeaconManager()
         }
         
-        container.register(ShortRanger.self) {
-            ShortRanger()
-        }
-        
-        container.register(PresenceStateMachine.self) {
-            PresenceStateMachine()
-        }
-        
-        // Attendance Services
-        container.registerSingleton(SessionManager.self) {
-            SessionManager(
-                store: container.resolve(KeyValueStore.self)!,
-                userId: userId
-            )
-        }
-        
-        container.register(AttendanceSink.self) {
-            CompositeSink(sinks: [NotificationSink()])
+        // Attendance Services  
+        container.registerSingleton(AttendanceServiceProtocol.self) {
+            AttendanceService(userId: userId)
         }
         
         // Location Services
-        container.registerSingleton(SLCSService.self) {
-            SLCSService()
-        }
-        
-        container.registerSingleton(PermissionManager.self) {
-            PermissionManager()
-        }
-        
-        // Heartbeat Service
-        container.register(HeartbeatService.self) {
-            HeartbeatService(configuration: .default)
+        container.registerSingleton(LocationManagerProtocol.self) {
+            LocationManager.shared
         }
     }
 }

@@ -194,6 +194,12 @@ public final class LoggerService {
         fileLogger.clear()
     }
     
+    // MARK: - App Lifecycle Logging
+    
+    public func logAppLifecycle(_ message: String, category: LogCategory = .app) {
+        info("[LIFECYCLE] \(message)", category: category)
+    }
+    
     // MARK: - Performance Logging
     
     public func measureTime<T>(

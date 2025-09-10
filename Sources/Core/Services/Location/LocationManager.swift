@@ -7,7 +7,6 @@
 
 import Foundation
 import CoreLocation
-import BeaconAttendanceFeatures
 
 /// Concrete implementation of LocationManagerProtocol
 public final class LocationManager: NSObject, LocationManagerProtocol {

@@ -90,36 +90,41 @@ public final class AppLifecycleManager {
     // MARK: - Notification Handlers
     
     @objc private func appDidBecomeActive() {
-        Logger.info("App did become active")
-        TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "active"])
+        LoggerService.shared.info("App did become active")
+        // TODO: Implement telemetry tracking
+        // TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "active"])
         
         notifyObservers { $0.appDidBecomeActive() }
     }
     
     @objc private func appWillResignActive() {
-        Logger.info("App will resign active")
-        TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "inactive"])
+        LoggerService.shared.info("App will resign active")
+        // TODO: Implement telemetry tracking
+        // TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "inactive"])
         
         notifyObservers { $0.appWillResignActive() }
     }
     
     @objc private func appDidEnterBackground() {
-        Logger.info("App did enter background")
-        TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "background"])
+        LoggerService.shared.info("App did enter background")
+        // TODO: Implement telemetry tracking
+        // TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "background"])
         
         notifyObservers { $0.appDidEnterBackground() }
     }
     
     @objc private func appWillEnterForeground() {
-        Logger.info("App will enter foreground")
-        TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "foreground"])
+        LoggerService.shared.info("App will enter foreground")
+        // TODO: Implement telemetry tracking
+        // TelemetryManager.shared.track(.appLifecycle, metadata: ["state": "foreground"])
         
         notifyObservers { $0.appWillEnterForeground() }
     }
     
     @objc private func appWillTerminate() {
-        Logger.info("App will terminate")
-        TelemetryManager.shared.track(.appLifecycle, severity: .warning, metadata: ["state": "terminate"])
+        LoggerService.shared.info("App will terminate")
+        // TODO: Implement telemetry tracking
+        // TelemetryManager.shared.track(.appLifecycle, severity: .warning, metadata: ["state": "terminate"])
         
         notifyObservers { $0.appWillTerminate() }
     }

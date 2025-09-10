@@ -121,18 +121,18 @@ class AttendanceViewController: UIViewController {
     
     init() {
         // Resolve dependencies
-        self.beaconManager = DependencyContainer.resolve(BeaconManagerProtocol.self)
-        self.attendanceService = DependencyContainer.resolve(AttendanceServiceProtocol.self)
-        self.locationManager = DependencyContainer.resolve(LocationManagerProtocol.self)
+        self.beaconManager = DependencyContainer.shared.resolve(BeaconManagerProtocol.self)!
+        self.attendanceService = DependencyContainer.shared.resolve(AttendanceServiceProtocol.self)!
+        self.locationManager = DependencyContainer.shared.resolve(LocationManagerProtocol.self)!
         
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
         // Resolve dependencies
-        self.beaconManager = DependencyContainer.resolve(BeaconManagerProtocol.self)
-        self.attendanceService = DependencyContainer.resolve(AttendanceServiceProtocol.self)
-        self.locationManager = DependencyContainer.resolve(LocationManagerProtocol.self)
+        self.beaconManager = DependencyContainer.shared.resolve(BeaconManagerProtocol.self)!
+        self.attendanceService = DependencyContainer.shared.resolve(AttendanceServiceProtocol.self)!
+        self.locationManager = DependencyContainer.shared.resolve(LocationManagerProtocol.self)!
         
         super.init(coder: coder)
     }
@@ -330,13 +330,17 @@ class AttendanceViewController: UIViewController {
     @objc private func checkInTapped() {
         LoggerService.shared.info("Manual check-in requested", category: .ui)
         
-        // Use real attendance service
-        attendanceService.checkIn(beaconId: detectedBeacon?.identifier ?? "manual") { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let session):
-                    self?.isCheckedIn = true
-                    self?.currentSession = session
+        Task {
+            do {
+                let location = try? await locationManager.getCurrentLocation()
+                let session = try await attendanceService.checkIn(
+                    at: location,
+                    beaconId: detectedBeacon?.identifier
+                )
+                
+                await MainActor.run {
+                    self.isCheckedIn = true
+                    self.currentSession = session
                     
                     LoggerService.shared.info("Check-in successful: \(session.id)", category: .beacon)
                     
@@ -346,9 +350,10 @@ class AttendanceViewController: UIViewController {
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self?.present(alert, animated: true)
-                    
-                case .failure(let error):
+                    self.present(alert, animated: true)
+                }
+            } catch {
+                await MainActor.run {
                     LoggerService.shared.error("Check-in failed", error: error, category: .beacon)
                     
                     let alert = UIAlertController(
@@ -357,7 +362,7 @@ class AttendanceViewController: UIViewController {
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self?.present(alert, animated: true)
+                    self.present(alert, animated: true)
                 }
             }
         }
@@ -376,15 +381,17 @@ class AttendanceViewController: UIViewController {
             
             LoggerService.shared.info("Check-out requested for session: \(sessionId)", category: .ui)
             
-            self?.attendanceService.checkOut(sessionId: sessionId) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
+            Task {
+                do {
+                    try await self?.attendanceService.checkOut(sessionId: sessionId)
+                    
+                    await MainActor.run {
                         self?.isCheckedIn = false
                         self?.currentSession = nil
                         LoggerService.shared.info("Check-out successful", category: .beacon)
-                        
-                    case .failure(let error):
+                    }
+                } catch {
+                    await MainActor.run {
                         LoggerService.shared.error("Check-out failed", error: error, category: .beacon)
                     }
                 }
@@ -408,12 +415,12 @@ class AttendanceViewController: UIViewController {
     
     private func checkPermissions() {
         // Check location permission
-        locationManager.requestAlwaysAuthorization()
+        locationManager.requestLocationPermission()
         
-        let locationStatus = locationManager.authorizationStatus
+        let locationStatus = locationManager.getAuthorizationStatus()
         let bluetoothStatus = "Enabled" // Would check CBCentralManager in real app
         
-        sessionInfoLabel.text = "Location: \(locationStatus) | Bluetooth: \(bluetoothStatus)"
+        sessionInfoLabel.text = "Location: \(locationStatus.rawValue) | Bluetooth: \(bluetoothStatus)"
         
         if locationStatus == .denied || locationStatus == .restricted {
             LoggerService.shared.warning("Location permission denied", category: .location)
@@ -431,10 +438,10 @@ class AttendanceViewController: UIViewController {
         }
         
         let region = BeaconRegion(
+            identifier: "com.oxii.beacon.main",
             uuid: uuid,
             major: nil,
-            minor: nil,
-            identifier: "com.oxii.beacon.main"
+            minor: nil
         )
         
         beaconManager.delegate = self
@@ -450,10 +457,10 @@ class AttendanceViewController: UIViewController {
         guard let uuid = UUID(uuidString: config.defaultUUID) else { return }
         
         let region = BeaconRegion(
+            identifier: "com.oxii.beacon.main",
             uuid: uuid,
             major: nil,
-            minor: nil,
-            identifier: "com.oxii.beacon.main"
+            minor: nil
         )
         
         beaconManager.startRanging(for: region)
@@ -465,10 +472,10 @@ class AttendanceViewController: UIViewController {
         guard let uuid = UUID(uuidString: config.defaultUUID) else { return }
         
         let region = BeaconRegion(
+            identifier: "com.oxii.beacon.main",
             uuid: uuid,
             major: nil,
-            minor: nil,
-            identifier: "com.oxii.beacon.main"
+            minor: nil
         )
         
         beaconManager.stopRanging(for: region)
@@ -481,7 +488,9 @@ class AttendanceViewController: UIViewController {
 extension AttendanceViewController: BeaconManagerDelegate {
     
     func beaconManager(_ manager: BeaconManagerProtocol, didEnterRegion region: BeaconRegion) {
-        LoggerService.shared.logBeaconEvent("Entered region", beaconId: region.identifier)
+        LoggerService.shared.info("Entered beacon region: \(region.identifier)", category: .beacon)
+        
+        detectedBeacon = region
         
         // Auto check-in if enabled
         if !isCheckedIn && AppConfiguration.shared.getValue(for: "auto_checkin", default: true) {
@@ -490,7 +499,7 @@ extension AttendanceViewController: BeaconManagerDelegate {
     }
     
     func beaconManager(_ manager: BeaconManagerProtocol, didExitRegion region: BeaconRegion) {
-        LoggerService.shared.logBeaconEvent("Exited region", beaconId: region.identifier)
+        LoggerService.shared.info("Exited beacon region: \(region.identifier)", category: .beacon)
         
         // Update UI
         DispatchQueue.main.async { [weak self] in
