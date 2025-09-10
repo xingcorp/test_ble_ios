@@ -25,6 +25,16 @@ public final class BeaconManager: NSObject, BeaconManagerProtocol {
         super.init()
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        
+        // CRITICAL: Enable background mode for beacon monitoring
+        self.locationManager.allowsBackgroundLocationUpdates = true
+        self.locationManager.pausesLocationUpdatesAutomatically = false
+        self.locationManager.showsBackgroundLocationIndicator = false
+        
+        // Request always authorization for background monitoring
+        if CLLocationManager.authorizationStatus() != .authorizedAlways {
+            self.locationManager.requestAlwaysAuthorization()
+        }
     }
     
     // MARK: - BeaconManagerProtocol

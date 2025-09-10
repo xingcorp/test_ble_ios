@@ -132,7 +132,7 @@ public final class AppConfiguration {
             )
             
             self.beacon = BeaconConfiguration(
-                defaultUUID: "550e8400-e29b-41d4-a716-446655440000", // Dev UUID
+                defaultUUID: "FDA50693-0000-0000-0000-290995101092", // Real beacon UUID
                 scanInterval: 1.0,
                 monitoringEnabled: true,
                 rangingEnabled: true,
