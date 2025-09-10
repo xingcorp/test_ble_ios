@@ -262,7 +262,6 @@
 			files = (
 				5A9B2D272E704AD70036DCFA /* LaunchScreen.storyboard in Resources */,
 				5A9B2D282E704AD70036DCFA /* Assets.xcassets in Resources */,
-				5A9B2D292E704AD70036DCFA /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,42 +441,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = BeaconAttendance/BeaconAttendance.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"BeaconAttendance/Preview Content\"";
 				DEVELOPMENT_TEAM = L3FP5738Q7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BeaconAttendanceApp/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Beacon Attendance";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Beacon Attendance uses Bluetooth to detect proximity beacons for accurate attendance tracking.";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Beacon Attendance uses Bluetooth to communicate with attendance beacons.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Beacon Attendance needs location access to detect when you enter or leave work sites for automatic attendance tracking.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Beacon Attendance needs background location access to automatically track your attendance even when the app is closed.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon Attendance needs location access to detect nearby beacons for attendance check-in.";
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 location-services bluetooth-le";
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.soffice.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -492,42 +472,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = BeaconAttendance/BeaconAttendance.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"BeaconAttendance/Preview Content\"";
 				DEVELOPMENT_TEAM = L3FP5738Q7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BeaconAttendanceApp/Resources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Beacon Attendance";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Beacon Attendance uses Bluetooth to detect proximity beacons for accurate attendance tracking.";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Beacon Attendance uses Bluetooth to communicate with attendance beacons.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Beacon Attendance needs location access to detect when you enter or leave work sites for automatic attendance tracking.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Beacon Attendance needs background location access to automatically track your attendance even when the app is closed.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Beacon Attendance needs location access to detect nearby beacons for attendance check-in.";
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 location-services bluetooth-le";
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.BeaconAttendance;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oxii.soffice.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -543,8 +504,8 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = L3FP5738Q7;
-				GENERATE_INFOPLIST_FILE = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
@@ -566,8 +527,8 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = L3FP5738Q7;
-				GENERATE_INFOPLIST_FILE = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
@@ -588,8 +549,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = L3FP5738Q7;
-				GENERATE_INFOPLIST_FILE = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
@@ -610,8 +571,8 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = L3FP5738Q7;
-				GENERATE_INFOPLIST_FILE = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 1.0;
