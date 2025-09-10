@@ -67,6 +67,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A9B2D302E704CA30036DCFA /* BeaconAttendanceCore in Frameworks */,
+				5A9B2D312E704CA30036DCFA /* BeaconAttendanceFeatures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,6 +159,8 @@
 			);
 			name = BeaconAttendance;
 			packageProductDependencies = (
+				5A9B2D2E2E704CA30036DCFA /* BeaconAttendanceCore */,
+				5A9B2D2F2E704CA30036DCFA /* BeaconAttendanceFeatures */,
 			);
 			productName = BeaconAttendance;
 			productReference = 5A9B2CF02E7034560036DCFA /* BeaconAttendance.app */;
@@ -628,6 +632,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5A9B2D2E2E704CA30036DCFA /* BeaconAttendanceCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A9B2D2D2E704CA30036DCFA /* XCLocalSwiftPackageReference "../../../test_ble_ios" */;
+			productName = BeaconAttendanceCore;
+		};
+		5A9B2D2F2E704CA30036DCFA /* BeaconAttendanceFeatures */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A9B2D2D2E704CA30036DCFA /* XCLocalSwiftPackageReference "../../../test_ble_ios" */;
+			productName = BeaconAttendanceFeatures;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCLocalSwiftPackageReference section */
 		5A9B2D2D2E704CA30036DCFA /* XCLocalSwiftPackageReference "../../../test_ble_ios" */ = {

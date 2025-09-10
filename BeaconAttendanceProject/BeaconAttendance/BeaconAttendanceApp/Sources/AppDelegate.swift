@@ -6,10 +6,8 @@
 //
 
 import UIKit
-// Note: Uncomment these when adding packages in Xcode
-// TODO: Add these when package is configured
-// import BeaconAttendanceCore
-// import BeaconAttendanceFeatures
+import BeaconAttendanceCore
+import BeaconAttendanceFeatures
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -45,14 +43,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Setup
     
     private func setupCoreServices() {
-        // Note: This will be implemented when packages are connected
-        // Example:
-        // _ = AppLifecycleManager.shared
-        // DependencyContainer.registerAppDependencies(userId: getUserId())
+        // Initialize logging first
+        LoggerService.shared.minimumLevel = .debug
+        LoggerService.shared.logAppLifecycle("Application starting")
         
-        // For now, just print
-        print("📱 BeaconAttendance App Started")
-        print("🔧 Core services would be initialized here")
+        // Validate configuration
+        guard AppConfiguration.shared.validate() else {
+            LoggerService.shared.fault("Configuration validation failed")
+            return
+        }
+        
+        // Initialize core services
+        _ = AppLifecycleManager.shared
+        
+        // Register dependencies
+        DependencyContainer.registerAppDependencies(userId: getUserId())
+        
+        // Setup background tasks
+        BackgroundTaskService.shared.registerTasks()
+        
+        // Request notification permissions
+        NotificationManager.shared.requestAuthorization { granted in
+            LoggerService.shared.info("Notification permission: \(granted)")
+        }
+        
+        LoggerService.shared.info("✅ Core services initialized")
+        LoggerService.shared.info(AppConfiguration.shared.debugInfo)
     }
     
     private func configureAppearance() {

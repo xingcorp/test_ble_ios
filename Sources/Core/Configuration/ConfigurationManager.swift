@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AppConfiguration: Codable {
+public struct LegacyAppConfiguration: Codable {
     public let sites: [SiteConfiguration]
     public let heartbeatInterval: TimeInterval
     public let rangingDuration: TimeInterval
@@ -15,7 +15,7 @@ public struct AppConfiguration: Codable {
     public let telemetryEnabled: Bool
     public let debugMode: Bool
     
-    public static let `default` = AppConfiguration(
+    public static let `default` = LegacyAppConfiguration(
         sites: [],
         heartbeatInterval: 60,
         rangingDuration: 8,
@@ -48,7 +48,7 @@ public final class ConfigurationManager {
     
     private let configKey = "app_configuration"
     private let store: KeyValueStore
-    private var currentConfig: AppConfiguration
+    private var currentConfig: LegacyAppConfiguration
     
     private init() {
         self.store = UserDefaultsStore(prefix: "config")
@@ -57,11 +57,11 @@ public final class ConfigurationManager {
     
     // MARK: - Public Methods
     
-    public func getCurrentConfiguration() -> AppConfiguration {
+    public func getCurrentConfiguration() -> LegacyAppConfiguration {
         return currentConfig
     }
     
-    public func updateConfiguration(_ config: AppConfiguration) {
+    public func updateConfiguration(_ config: LegacyAppConfiguration) {
         currentConfig = config
         saveConfiguration(config)
         
@@ -75,7 +75,7 @@ public final class ConfigurationManager {
         )
     }
     
-    public func fetchRemoteConfiguration(from url: URL, completion: @escaping (Result<AppConfiguration, Error>) -> Void) {
+    public func fetchRemoteConfiguration(from url: URL, completion: @escaping (Result<LegacyAppConfiguration, Error>) -> Void) {
         let task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             if let error = error {
                 completion(.failure(error))
@@ -88,7 +88,7 @@ public final class ConfigurationManager {
             }
             
             do {
-                let config = try JSONDecoder().decode(AppConfiguration.self, from: data)
+                let config = try JSONDecoder().decode(LegacyAppConfiguration.self, from: data)
                 self?.updateConfiguration(config)
                 completion(.success(config))
             } catch {
@@ -100,25 +100,25 @@ public final class ConfigurationManager {
     
     // MARK: - Private Methods
     
-    private static func loadLocalConfig() -> AppConfiguration? {
+    private static func loadLocalConfig() -> LegacyAppConfiguration? {
         // Try to load from bundle first
         if let url = Bundle.main.url(forResource: "config", withExtension: "json"),
            let data = try? Data(contentsOf: url),
-           let config = try? JSONDecoder().decode(AppConfiguration.self, from: data) {
+           let config = try? JSONDecoder().decode(LegacyAppConfiguration.self, from: data) {
             return config
         }
         
         // Fall back to stored config
         let store = UserDefaultsStore(prefix: "config")
         if let data = store.get("app_configuration"),
-           let config = try? JSONDecoder().decode(AppConfiguration.self, from: data) {
+           let config = try? JSONDecoder().decode(LegacyAppConfiguration.self, from: data) {
             return config
         }
         
         return nil
     }
     
-    private func saveConfiguration(_ config: AppConfiguration) {
+    private func saveConfiguration(_ config: LegacyAppConfiguration) {
         if let data = try? JSONEncoder().encode(config) {
             store.set(data, for: configKey)
         }
