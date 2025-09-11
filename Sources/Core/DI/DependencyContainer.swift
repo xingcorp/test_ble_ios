@@ -125,5 +125,10 @@ public extension DependencyContainer {
         container.registerSingleton(LocationManagerProtocol.self) {
             LocationManager.shared
         }
+        
+        // Permission Services
+        container.registerSingleton(PermissionManager.self) {
+            PermissionManager()
+        }
     }
 }

@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 #endif
 import CoreLocation
+import CoreBluetooth
 import UserNotifications
 
 public enum PermissionStatus {
@@ -22,6 +23,7 @@ public enum PermissionStatus {
 public protocol PermissionManagerDelegate: AnyObject {
     func permissionManager(_ manager: PermissionManager, didUpdateLocationStatus: PermissionStatus)
     func permissionManager(_ manager: PermissionManager, didUpdateNotificationStatus: PermissionStatus)
+    func permissionManager(_ manager: PermissionManager, didUpdateBluetoothStatus: PermissionStatus)
 }
 
 /// Manages all app permissions in a centralized way
@@ -31,6 +33,8 @@ public final class PermissionManager: NSObject {
     
     private let locationManager = CLLocationManager()
     private let notificationCenter = UNUserNotificationCenter.current()
+    private var bluetoothManager: CBCentralManager?
+    private var bluetoothStatus: PermissionStatus = .notDetermined
     
     public override init() {
         super.init()
@@ -119,6 +123,33 @@ public final class PermissionManager: NSObject {
         }
     }
     
+    // MARK: - Bluetooth Permission
+    
+    public func checkBluetoothStatus() -> PermissionStatus {
+        // Initialize bluetooth manager if needed to check status
+        if bluetoothManager == nil {
+            bluetoothManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey: false])
+        }
+        return bluetoothStatus
+    }
+    
+    private func updateBluetoothStatus(from state: CBManagerState) {
+        switch state {
+        case .poweredOn:
+            bluetoothStatus = .authorized
+        case .unauthorized:
+            bluetoothStatus = .denied
+        case .unsupported, .poweredOff:
+            bluetoothStatus = .restricted
+        case .unknown, .resetting:
+            bluetoothStatus = .notDetermined
+        @unknown default:
+            bluetoothStatus = .notDetermined
+        }
+        
+        delegate?.permissionManager(self, didUpdateBluetoothStatus: bluetoothStatus)
+    }
+    
     // MARK: - Background App Refresh
     
     public func checkBackgroundRefreshStatus() -> Bool {
@@ -178,5 +209,14 @@ extension PermissionManager: CLLocationManagerDelegate {
         }
         
         delegate?.permissionManager(self, didUpdateLocationStatus: permissionStatus)
+    }
+}
+
+// MARK: - CBCentralManagerDelegate
+
+extension PermissionManager: CBCentralManagerDelegate {
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        Logger.info("Bluetooth state updated: \(central.state.rawValue)")
+        updateBluetoothStatus(from: central.state)
     }
 }

@@ -36,14 +36,17 @@ public final class LocationManager: NSObject, LocationManagerProtocol {
         
         switch status {
         case .notDetermined:
-            locationManager.requestAlwaysAuthorization()
+            // IMPORTANT: Must request WhenInUse first per Apple guidelines
+            LoggerService.shared.info("📍 Requesting WhenInUse location permission", category: .location)
+            locationManager.requestWhenInUseAuthorization()
         case .restricted, .denied:
             LoggerService.shared.warning("Location permission denied or restricted", category: .location)
         case .authorizedWhenInUse:
             // Request always authorization for beacon monitoring
+            LoggerService.shared.info("📍 Upgrading to Always location permission for beacon monitoring", category: .location)
             locationManager.requestAlwaysAuthorization()
         case .authorizedAlways:
-            LoggerService.shared.info("Location permission already granted", category: .location)
+            LoggerService.shared.info("✅ Location permission already granted (Always)", category: .location)
         @unknown default:
             LoggerService.shared.warning("Unknown location authorization status", category: .location)
         }

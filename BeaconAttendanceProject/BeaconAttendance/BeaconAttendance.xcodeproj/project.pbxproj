@@ -12,6 +12,7 @@
 		5A61A5B32E72BD9B00AC72C0 /* BeaconScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A61A5AF2E72BD9B00AC72C0 /* BeaconScannerViewController.swift */; };
 		5A61A5B42E72BD9B00AC72C0 /* BeaconScannerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A61A5AD2E72BD9B00AC72C0 /* BeaconScannerViewModel.swift */; };
 		5A61A5B52E72BD9B00AC72C0 /* BeaconTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A61A5B02E72BD9B00AC72C0 /* BeaconTableViewCell.swift */; };
+		5A61A5B72E72DF8800AC72C0 /* PermissionOnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A61A5B62E72DF8800AC72C0 /* PermissionOnboardingViewController.swift */; };
 		5A9B2D272E704AD70036DCFA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A9B2D202E704AD70036DCFA /* LaunchScreen.storyboard */; };
 		5A9B2D282E704AD70036DCFA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A9B2D1E2E704AD70036DCFA /* Assets.xcassets */; };
 		5A9B2D2A2E704AD70036DCFA /* AttendanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A9B2D232E704AD70036DCFA /* AttendanceViewController.swift */; };
@@ -40,6 +41,7 @@
 		5A61A5AD2E72BD9B00AC72C0 /* BeaconScannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconScannerViewModel.swift; sourceTree = "<group>"; };
 		5A61A5AF2E72BD9B00AC72C0 /* BeaconScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconScannerViewController.swift; sourceTree = "<group>"; };
 		5A61A5B02E72BD9B00AC72C0 /* BeaconTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconTableViewCell.swift; sourceTree = "<group>"; };
+		5A61A5B62E72DF8800AC72C0 /* PermissionOnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionOnboardingViewController.swift; sourceTree = "<group>"; };
 		5A9B2CF02E7034560036DCFA /* BeaconAttendance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BeaconAttendance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A9B2D012E7034580036DCFA /* BeaconAttendanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeaconAttendanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A9B2D0B2E7034580036DCFA /* BeaconAttendanceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BeaconAttendanceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -156,6 +158,7 @@
 		5A9B2D252E704AD70036DCFA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				5A61A5B62E72DF8800AC72C0 /* PermissionOnboardingViewController.swift */,
 				5A61A5B22E72BD9B00AC72C0 /* BeaconScanner */,
 				5A9B2D222E704AD70036DCFA /* AppDelegate.swift */,
 				5A9B2D232E704AD70036DCFA /* AttendanceViewController.swift */,
@@ -327,6 +330,7 @@
 				5A9B2D2A2E704AD70036DCFA /* AttendanceViewController.swift in Sources */,
 				5A9B2D2B2E704AD70036DCFA /* AppDelegate.swift in Sources */,
 				5A9B2D2C2E704AD70036DCFA /* SceneDelegate.swift in Sources */,
+				5A61A5B72E72DF8800AC72C0 /* PermissionOnboardingViewController.swift in Sources */,
 				5A61A5B32E72BD9B00AC72C0 /* BeaconScannerViewController.swift in Sources */,
 				5A61A5B42E72BD9B00AC72C0 /* BeaconScannerViewModel.swift in Sources */,
 				5A61A5B52E72BD9B00AC72C0 /* BeaconTableViewCell.swift in Sources */,
