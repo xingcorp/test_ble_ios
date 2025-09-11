@@ -43,9 +43,37 @@ public final class BeaconManager: NSObject, BeaconManagerProtocol {
         let clRegion = region.toCLBeaconRegion()
         monitoredRegions[region.identifier] = region
         locationManager.startMonitoring(for: clRegion)
-        locationManager.requestState(for: clRegion)
         
         LoggerService.shared.info("Started monitoring for beacon: \(region.identifier)", category: .beacon)
+        
+        // Force request state immediately
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.locationManager.requestState(for: clRegion)
+            LoggerService.shared.info("📍 Requested state for region: \(region.identifier)", category: .beacon)
+        }
+        
+        // Log if no state determined after 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+            guard let self = self else { return }
+            if self.monitoredRegions[region.identifier] != nil {
+                LoggerService.shared.warning("⚠️ No state determined after 5 seconds for region: \(region.identifier)", category: .beacon)
+                LoggerService.shared.warning("🔍 This usually means beacon is not detected or UUID mismatch", category: .beacon)
+                
+                // Check if ranging is receiving any beacons
+                if self.rangedRegions.isEmpty {
+                    LoggerService.shared.warning("❌ No regions being ranged", category: .beacon)
+                } else {
+                    LoggerService.shared.info("✅ Ranging active for \(self.rangedRegions.count) region(s)", category: .beacon)
+                }
+            }
+        }
+        
+        // Also try ranging immediately if monitoring is available
+        if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) {
+            LoggerService.shared.info("✅ Monitoring available for beacons", category: .beacon)
+        } else {
+            LoggerService.shared.error("❌ Monitoring NOT available for beacons!", category: .beacon)
+        }
     }
     
     public func stopMonitoring(for region: BeaconRegion) {
@@ -123,10 +151,19 @@ extension BeaconManager: CLLocationManagerDelegate {
     }
     
     public func locationManager(_ manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
-        guard let customRegion = rangedRegions[region.identifier] else { return }
+        guard let customRegion = rangedRegions[region.identifier] else { 
+            LoggerService.shared.warning("⚠️ Ranged beacons for unknown region: \(region.identifier)", category: .beacon)
+            return 
+        }
         
         if !beacons.isEmpty {
-            LoggerService.shared.debug("Ranged \(beacons.count) beacons in region: \(region.identifier)", category: .beacon)
+            LoggerService.shared.info("✅ FOUND \(beacons.count) BEACON(S)!", category: .beacon)
+            for beacon in beacons {
+                LoggerService.shared.info("📡 Beacon: Major=\(beacon.major), Minor=\(beacon.minor), RSSI=\(beacon.rssi), Distance=\(beacon.accuracy)m", category: .beacon)
+            }
+        } else {
+            // Log every 5 seconds that no beacons found
+            LoggerService.shared.debug("🔍 No beacons in range for region: \(region.identifier)", category: .beacon)
         }
         
         delegate?.beaconManager(self, didRangeBeacons: beacons, in: customRegion)
@@ -149,20 +186,23 @@ extension BeaconManager: CLLocationManagerDelegate {
         switch state {
         case .inside:
             stateString = "inside"
+            LoggerService.shared.info("🟢 BEACON REGION INSIDE: \(beaconRegion.identifier)", category: .beacon)
             if let customRegion = monitoredRegions[beaconRegion.identifier] {
                 delegate?.beaconManager(self, didEnterRegion: customRegion)
                 startRanging(for: customRegion)
             }
         case .outside:
             stateString = "outside"
+            LoggerService.shared.info("🔴 BEACON REGION OUTSIDE: \(beaconRegion.identifier)", category: .beacon)
             if let customRegion = monitoredRegions[beaconRegion.identifier] {
                 delegate?.beaconManager(self, didExitRegion: customRegion)
                 stopRanging(for: customRegion)
             }
         case .unknown:
             stateString = "unknown"
+            LoggerService.shared.warning("⚠️ BEACON REGION UNKNOWN: \(beaconRegion.identifier)", category: .beacon)
         }
         
-        LoggerService.shared.debug("Region state for \(beaconRegion.identifier): \(stateString)", category: .beacon)
+        LoggerService.shared.info("📍 Region state for \(beaconRegion.identifier): \(stateString) - UUID: \(beaconRegion.uuid)", category: .beacon)
     }
 }

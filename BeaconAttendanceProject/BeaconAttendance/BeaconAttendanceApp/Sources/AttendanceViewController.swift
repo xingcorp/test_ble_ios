@@ -7,7 +7,6 @@
 
 import UIKit
 import BeaconAttendanceCore
-import BeaconAttendanceFeatures
 import CoreLocation
 
 class AttendanceViewController: UIViewController {
@@ -402,6 +401,49 @@ class AttendanceViewController: UIViewController {
     }
     
     @objc private func settingsTapped() {
+        #if DEBUG
+        // Show debug menu in development
+        let alert = UIAlertController(
+            title: "Debug Menu",
+            message: "Choose an option",
+            preferredStyle: .actionSheet
+        )
+        
+        alert.addAction(UIAlertAction(title: "🔍 Professional Beacon Scanner", style: .default) { [weak self] _ in
+            let scannerVC = BeaconScannerViewController()
+            self?.navigationController?.pushViewController(scannerVC, animated: true)
+        })
+        
+        alert.addAction(UIAlertAction(title: "📡 Quick Scan (10s)", style: .default) { [weak self] _ in
+            self?.runQuickBeaconScan()
+        })
+        
+        alert.addAction(UIAlertAction(title: "📋 View Logs", style: .default) { [weak self] _ in
+            // TODO: Implement log viewer
+            let logAlert = UIAlertController(
+                title: "Logs",
+                message: "Log viewer coming soon",
+                preferredStyle: .alert
+            )
+            logAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self?.present(logAlert, animated: true)
+        })
+        
+        alert.addAction(UIAlertAction(title: "🗑 Clear Session", style: .destructive) { [weak self] _ in
+            self?.currentSession = nil
+            self?.isCheckedIn = false
+            self?.updateUI()
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        if let popover = alert.popoverPresentationController {
+            popover.barButtonItem = navigationItem.rightBarButtonItem
+        }
+        
+        present(alert, animated: true)
+        #else
+        // Production version
         let alert = UIAlertController(
             title: "Settings",
             message: "Settings will be available in the next version",
@@ -409,6 +451,7 @@ class AttendanceViewController: UIViewController {
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+        #endif
     }
     
     // MARK: - Permissions
@@ -465,6 +508,11 @@ class AttendanceViewController: UIViewController {
         
         beaconManager.startRanging(for: region)
         LoggerService.shared.info("Beacon ranging started", category: .beacon)
+        
+        // Debug: Check all monitored regions after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.debugCheckMonitoredRegions()
+        }
     }
     
     private func stopBeaconScanning() {
@@ -480,6 +528,70 @@ class AttendanceViewController: UIViewController {
         
         beaconManager.stopRanging(for: region)
         LoggerService.shared.info("Beacon ranging stopped", category: .beacon)
+    }
+    
+    private func debugCheckMonitoredRegions() {
+        LoggerService.shared.info("🔍 DEBUG: Checking monitored regions...", category: .beacon)
+        
+        let monitoredRegions = beaconManager.getMonitoredRegions()
+        LoggerService.shared.info("📋 Currently monitoring \(monitoredRegions.count) region(s)", category: .beacon)
+        
+        for region in monitoredRegions {
+            LoggerService.shared.info("📡 Region: \(region.identifier) - UUID: \(region.uuid)", category: .beacon)
+        }
+        
+        // Try to force another state request
+        if let firstRegion = monitoredRegions.first {
+            let clRegion = firstRegion.toCLBeaconRegion()
+            LoggerService.shared.info("🔄 Force requesting state for: \(firstRegion.identifier)", category: .beacon)
+        }
+    }
+    
+    private func runQuickBeaconScan() {
+        let progressAlert = UIAlertController(
+            title: "Scanning for Beacons",
+            message: "\n\nSearching...\n\n",
+            preferredStyle: .alert
+        )
+        
+        let spinner = UIActivityIndicatorView(style: .large)
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.startAnimating()
+        progressAlert.view.addSubview(spinner)
+        
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: progressAlert.view.centerXAnchor),
+            spinner.topAnchor.constraint(equalTo: progressAlert.view.topAnchor, constant: 95)
+        ])
+        
+        present(progressAlert, animated: true) {
+            UniversalBeaconScanner.shared.onBeaconsDetected = { beacons in
+                DispatchQueue.main.async {
+                    progressAlert.dismiss(animated: true) {
+                        self.showQuickScanResults(beacons)
+                    }
+                }
+            }
+            
+            UniversalBeaconScanner.shared.runDiagnosticScan(duration: 10)
+        }
+    }
+    
+    private func showQuickScanResults(_ beacons: [DetectedBeacon]) {
+        let title = beacons.isEmpty ? "⚠️ No Beacons Found" : "✅ Found \(beacons.count) Beacon(s)"
+        
+        var message = ""
+        if beacons.isEmpty {
+            message = "No beacons detected. Check:\n• Beacon power\n• Bluetooth enabled\n• Location permission"
+        } else {
+            for beacon in beacons.prefix(5) {
+                message += "\n📡 \(beacon.uuid)\n   Major: \(beacon.major), Minor: \(beacon.minor)\n   Signal: \(beacon.rssi) dBm\n"
+            }
+        }
+        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 }
 
