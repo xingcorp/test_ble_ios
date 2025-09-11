@@ -40,16 +40,30 @@ public final class BeaconManager: NSObject, BeaconManagerProtocol {
     // MARK: - BeaconManagerProtocol
     
     public func startMonitoring(for region: BeaconRegion) {
+        // Check authorization first
+        let authStatus = CLLocationManager.authorizationStatus()
+        LoggerService.shared.info("📱 Location auth status: \(authStatus.rawValue)", category: .beacon)
+        
         let clRegion = region.toCLBeaconRegion()
+        
+        // Configure region for better detection
+        clRegion.notifyEntryStateOnDisplay = true
+        clRegion.notifyOnEntry = true
+        clRegion.notifyOnExit = true
+        
         monitoredRegions[region.identifier] = region
         locationManager.startMonitoring(for: clRegion)
         
         LoggerService.shared.info("Started monitoring for beacon: \(region.identifier)", category: .beacon)
+        LoggerService.shared.info("📡 Region UUID: \(clRegion.uuid), Major: \(clRegion.major?.intValue ?? -1), Minor: \(clRegion.minor?.intValue ?? -1)", category: .beacon)
         
         // Force request state immediately
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.locationManager.requestState(for: clRegion)
             LoggerService.shared.info("📍 Requested state for region: \(region.identifier)", category: .beacon)
+            
+            // Also start ranging immediately
+            self?.startRanging(for: region)
         }
         
         // Log if no state determined after 5 seconds
