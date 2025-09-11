@@ -480,6 +480,7 @@ class AttendanceViewController: UIViewController {
             return
         }
         
+        // Monitor for the general UUID region
         let region = BeaconRegion(
             identifier: "com.oxii.beacon.main",
             uuid: uuid,
@@ -490,7 +491,41 @@ class AttendanceViewController: UIViewController {
         beaconManager.delegate = self
         beaconManager.startMonitoring(for: region)
         
-        LoggerService.shared.info("Beacon monitoring started for UUID: \(config.defaultUUID)", category: .beacon)
+        // Monitor specific beacons by MAJOR only (minor is rolling)
+        // IMPORTANT: Minor values change every 5 minutes, so we monitor by Major only
+        
+        // Beacon 1: Major 4470 (Minor rolling)
+        let beacon1 = BeaconRegion(
+            identifier: "com.oxii.beacon.major-4470",
+            uuid: uuid,
+            major: 4470,
+            minor: nil  // nil = ignore minor changes
+        )
+        beaconManager.startMonitoring(for: beacon1)
+        
+        // Beacon 2: Major 57889 (Minor rolling)
+        let beacon2 = BeaconRegion(
+            identifier: "com.oxii.beacon.major-57889",
+            uuid: uuid,
+            major: 57889,
+            minor: nil  // nil = ignore minor changes
+        )
+        beaconManager.startMonitoring(for: beacon2)
+        
+        // Additional known majors from scan results
+        let knownMajors = [28012, 61593, 50609, 40426, 2813, 4993, 36329]
+        for major in knownMajors {
+            let region = BeaconRegion(
+                identifier: "com.oxii.beacon.major-\(major)",
+                uuid: uuid,
+                major: UInt16(major),
+                minor: nil
+            )
+            beaconManager.startMonitoring(for: region)
+        }
+        
+        LoggerService.shared.info("✅ Beacon monitoring started for UUID: \(config.defaultUUID)", category: .beacon)
+        LoggerService.shared.info("📡 Monitoring \(knownMajors.count + 2) beacon majors (ignoring rolling minors)", category: .beacon)
     }
     
     private func startBeaconScanning() {
@@ -578,20 +613,31 @@ class AttendanceViewController: UIViewController {
     }
     
     private func showQuickScanResults(_ beacons: [DetectedBeacon]) {
+        // Dismiss any existing alert first
+        if presentedViewController is UIAlertController {
+            dismiss(animated: false)
+        }
+        
         let title = beacons.isEmpty ? "⚠️ No Beacons Found" : "✅ Found \(beacons.count) Beacon(s)"
         
         var message = ""
         if beacons.isEmpty {
             message = "No beacons detected. Check:\n• Beacon power\n• Bluetooth enabled\n• Location permission"
         } else {
+            message = "BEACONS DETECTED! 🎉\n"
             for beacon in beacons.prefix(5) {
-                message += "\n📡 \(beacon.uuid)\n   Major: \(beacon.major), Minor: \(beacon.minor)\n   Signal: \(beacon.rssi) dBm\n"
+                message += "\n📡 UUID: \(beacon.uuid)\n   Major: \(beacon.major), Minor: \(beacon.minor)\n   Signal: \(beacon.rssi) dBm\n   Distance: \(String(format: "%.1f", beacon.distance))m\n"
             }
+            message += "\n✅ App is now configured to detect these beacons!"
         }
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
+        
+        // Present after a small delay to avoid conflicts
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.present(alert, animated: true)
+        }
     }
 }
 
@@ -600,23 +646,63 @@ class AttendanceViewController: UIViewController {
 extension AttendanceViewController: BeaconManagerDelegate {
     
     func beaconManager(_ manager: BeaconManagerProtocol, didEnterRegion region: BeaconRegion) {
-        LoggerService.shared.info("Entered beacon region: \(region.identifier)", category: .beacon)
+        LoggerService.shared.info("✅ ENTERED beacon region: \(region.identifier)", category: .beacon)
         
-        detectedBeacon = region
+        // Extract major from identifier if available
+        var majorString = "Unknown"
+        if region.identifier.contains("major-") {
+            majorString = region.identifier.replacingOccurrences(of: "com.oxii.beacon.major-", with: "")
+        }
         
-        // Auto check-in if enabled
-        if !isCheckedIn && AppConfiguration.shared.getValue(for: "auto_checkin", default: true) {
-            checkInTapped()
+        DispatchQueue.main.async { [weak self] in
+            self?.detectedBeacon = region
+            
+            // Update UI with entry notification
+            self?.statusDescriptionLabel.text = "🎉 Entered area: Major \(majorString)"
+            self?.updateBeaconInfo(site: "Detecting Major \(majorString)...", signal: nil, distance: nil)
+            
+            // Show notification banner
+            let banner = UIAlertController(
+                title: "📡 Beacon Detected",
+                message: "You entered beacon area (Major: \(majorString))",
+                preferredStyle: .alert
+            )
+            banner.addAction(UIAlertAction(title: "OK", style: .default))
+            self?.present(banner, animated: true)
+            
+            // Auto check-in if enabled
+            if self?.isCheckedIn == false && AppConfiguration.shared.getValue(for: "auto_checkin", default: true) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self?.checkInTapped()
+                }
+            }
         }
     }
     
     func beaconManager(_ manager: BeaconManagerProtocol, didExitRegion region: BeaconRegion) {
-        LoggerService.shared.info("Exited beacon region: \(region.identifier)", category: .beacon)
+        LoggerService.shared.info("🚪 EXITED beacon region: \(region.identifier)", category: .beacon)
+        
+        // Extract major from identifier
+        var majorString = "Unknown"
+        if region.identifier.contains("major-") {
+            majorString = region.identifier.replacingOccurrences(of: "com.oxii.beacon.major-", with: "")
+        }
         
         // Update UI
         DispatchQueue.main.async { [weak self] in
             self?.detectedBeacon = nil
+            self?.statusDescriptionLabel.text = "🚪 Left area: Major \(majorString)"
             self?.updateBeaconInfo(site: nil, signal: nil, distance: nil)
+            
+            // Auto check-out if enabled and checked in
+            if self?.isCheckedIn == true && AppConfiguration.shared.getValue(for: "auto_checkout", default: false) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    // Wait 2 seconds to avoid false exits
+                    if self?.detectedBeacon == nil {
+                        self?.checkOutTapped()
+                    }
+                }
+            }
         }
     }
     
@@ -628,8 +714,11 @@ extension AttendanceViewController: BeaconManagerDelegate {
         
         DispatchQueue.main.async { [weak self] in
             self?.detectedBeacon = region
+            
+            // Show Major (fixed) and Minor (rolling) values
+            let beaconInfo = "Beacon M:\(beacon.major)/m:\(beacon.minor)"
             self?.updateBeaconInfo(
-                site: "Beacon \(beacon.major).\(beacon.minor)",
+                site: beaconInfo,
                 signal: signal,
                 distance: distance
             )
@@ -643,7 +732,8 @@ extension AttendanceViewController: BeaconManagerDelegate {
             }
         }
         
-        LoggerService.shared.debug("Beacon ranged - Distance: \(distance ?? -1)m, RSSI: \(signal ?? 0)", category: .beacon)
+        // Log with more detail about rolling minor
+        LoggerService.shared.debug("📡 Beacon - Major:\(beacon.major) Minor:\(beacon.minor) Distance:\(String(format: "%.1f", distance ?? -1))m RSSI:\(signal ?? 0)dBm", category: .beacon)
     }
     
     func beaconManager(_ manager: BeaconManagerProtocol, didFailWithError error: Error) {
