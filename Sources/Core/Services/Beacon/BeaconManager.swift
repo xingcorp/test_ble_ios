@@ -31,9 +31,30 @@ public final class BeaconManager: NSObject, BeaconManagerProtocol {
         self.locationManager.pausesLocationUpdatesAutomatically = false
         self.locationManager.showsBackgroundLocationIndicator = false
         
-        // Request always authorization for background monitoring
-        if CLLocationManager.authorizationStatus() != .authorizedAlways {
+        // Request authorization based on current status
+        let status = CLLocationManager.authorizationStatus()
+        LoggerService.shared.info("🔐 Current location auth status: \(status.rawValue)", category: .beacon)
+        
+        switch status {
+        case .notDetermined:
+            LoggerService.shared.info("📍 Requesting location permission for first time", category: .beacon)
+            // First request When In Use, then upgrade to Always
+            self.locationManager.requestWhenInUseAuthorization()
+            // After getting When In Use, request Always
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+                    self?.locationManager.requestAlwaysAuthorization()
+                }
+            }
+        case .authorizedWhenInUse:
+            LoggerService.shared.info("📍 Have When In Use, requesting Always permission", category: .beacon)
             self.locationManager.requestAlwaysAuthorization()
+        case .authorizedAlways:
+            LoggerService.shared.info("✅ Already have Always permission", category: .beacon)
+        case .denied, .restricted:
+            LoggerService.shared.error("❌ Location permission denied/restricted", category: .beacon)
+        @unknown default:
+            break
         }
     }
     
@@ -141,6 +162,28 @@ public final class BeaconManager: NSObject, BeaconManagerProtocol {
 // MARK: - CLLocationManagerDelegate
 
 extension BeaconManager: CLLocationManagerDelegate {
+    
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        LoggerService.shared.info("🔐 Location authorization changed to: \(status.rawValue)", category: .beacon)
+        
+        switch status {
+        case .authorizedAlways:
+            LoggerService.shared.info("✅ Got Always permission - beacon monitoring will work!", category: .beacon)
+            // Re-start monitoring for all regions
+            for region in monitoredRegions.values {
+                let clRegion = region.toCLBeaconRegion()
+                locationManager.startMonitoring(for: clRegion)
+                locationManager.requestState(for: clRegion)
+            }
+        case .authorizedWhenInUse:
+            LoggerService.shared.info("📍 Got When In Use - requesting Always for background monitoring", category: .beacon)
+            locationManager.requestAlwaysAuthorization()
+        case .denied, .restricted:
+            LoggerService.shared.error("❌ Location permission denied - beacon monitoring won't work!", category: .beacon)
+        default:
+            break
+        }
+    }
     
     public func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         guard let beaconRegion = region as? CLBeaconRegion,
