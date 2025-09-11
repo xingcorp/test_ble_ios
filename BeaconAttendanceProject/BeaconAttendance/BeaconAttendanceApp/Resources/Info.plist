@@ -6,6 +6,8 @@
 	<array>
 		<string>com.oxii.beacon.heartbeat</string>
 		<string>com.oxii.beacon.sync</string>
+		<string>com.oxii.beacon.datasync</string>
+		<string>com.oxii.beacon.cleanup</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

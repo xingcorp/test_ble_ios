@@ -176,9 +176,9 @@ public final class LoggerService {
             }
         }
         
-        // Console logging for debug
+        // Console logging for debug - only if explicitly enabled
         #if DEBUG
-        if isConsoleLoggingEnabled {
+        if isConsoleLoggingEnabled && ProcessInfo.processInfo.environment["ENABLE_CONSOLE_LOG"] == "1" {
             print("\(level.emoji) [\(category.rawValue)] \(logMessage)")
         }
         #endif

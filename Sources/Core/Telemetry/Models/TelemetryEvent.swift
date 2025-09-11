@@ -8,19 +8,36 @@
 import Foundation
 
 public enum EventType: String, Codable {
+    // Attendance events
     case checkIn = "check_in"
     case checkOut = "check_out"
     case heartbeat = "heartbeat"
+    
+    // Beacon events
     case regionEnter = "region_enter"
     case regionExit = "region_exit"
     case rangingStart = "ranging_start"
     case rangingEnd = "ranging_end"
     case softExitStart = "soft_exit_start"
     case softExitCancel = "soft_exit_cancel"
+    
+    // Permission events
     case permissionGranted = "permission_granted"
     case permissionDenied = "permission_denied"
-    case error = "error"
+    
+    // Network events
+    case networkRequest = "network_request"
+    case networkResponse = "network_response"
+    case networkError = "network_error"
+    
+    // App events
     case appLifecycle = "app_lifecycle"
+    case settingChanged = "setting_changed"
+    case exportLogs = "export_logs"
+    
+    // Error events
+    case error = "error"
+    case crash = "crash"
 }
 
 public enum EventSeverity: String, Codable {
