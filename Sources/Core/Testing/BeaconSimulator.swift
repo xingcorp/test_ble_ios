@@ -269,3 +269,4 @@ public extension BeaconSimulator {
         LoggerService.shared.info("Running test scenario: \(scenario)", category: .beacon)
     }
 }
+#endif
