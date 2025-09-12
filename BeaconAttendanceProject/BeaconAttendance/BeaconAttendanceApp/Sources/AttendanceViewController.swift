@@ -152,13 +152,19 @@ class AttendanceViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Check if permission onboarding is needed
-        if !UserDefaults.standard.bool(forKey: "com.oxii.beacon.onboarding.completed") {
-            PermissionOnboardingViewController.presentIfNeeded(from: self)
-        }
-        
         checkPermissions()
         startBeaconScanning()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Check if permission onboarding is needed (moved to viewDidAppear to avoid presentation issues)
+        if !UserDefaults.standard.bool(forKey: "com.oxii.beacon.onboarding.completed") {
+            DispatchQueue.main.async { [weak self] in
+                PermissionOnboardingViewController.presentIfNeeded(from: self ?? UIViewController())
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
