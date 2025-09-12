@@ -1,0 +1,13 @@
+name: "Snippet: HTTP Interceptors"
+description: "Generate HTTPClient interceptor composition code"
+tags: ["networking", "snippet"]
+command: |
+  cat <<'EOF'
+  let interceptors: [HTTPInterceptor] = [
+    AuthInterceptor(tokenProvider: { /* Keychain */ nil }),
+    IdempotencyInterceptor(),
+    MetricsTraceInterceptor(),
+    LoggingInterceptor()
+  ]
+  let http = HTTPClient(interceptors: interceptors)
+  EOF

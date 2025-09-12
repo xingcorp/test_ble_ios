@@ -1,0 +1,39 @@
+name: "Plan: Create Planning Block"
+description: "Scaffold a Planning Block before any code changes"
+tags: ["plan", "sequential-thinking", "ios"]
+command: |
+  cat > {{file}} <<'PLANNING'
+  ## Planning Block
+  **Goal:** {{goal}}
+  **Constraints:** {{constraints}}
+  **Strategy:** {{strategy}}
+  **Task Graph:**
+  - D1: Design (diagram/contracts)
+  - I1: Domain: UseCase/Entity + Mapper
+  - I2: Data: Repository + DataSources
+  - I3: Presentation: ViewModel + Coordinator
+  - O1: Observability hooks (OSLog signpost, MetricKit)
+  - T1: Unit tests (UseCase/Mapper/Repo contract)
+  - V1: Verify (SwiftLint/format/tests/SLO guard)
+  **Done Criteria:** {{done_criteria}}
+  **Risks & Mitigations:** {{risks}}
+  PLANNING
+arguments:
+  - name: file
+    description: Planning file path
+    default_value: PLANNING.md
+  - name: goal
+    description: One-line objective
+    default_value: "Ship feature X safely"
+  - name: constraints
+    description: Performance/Security/Compatibility constraints
+    default_value: "P99<=800ms; iOS15+; no PII; deadline+7d"
+  - name: strategy
+    description: High-level strategy
+    default_value: "MVVM+Coordinator → UseCase → Repo; DTO↔Entity; DI via protocol"
+  - name: done_criteria
+    description: Definition of done
+    default_value: "tests+lint pass; arch rules ok; metrics hooks added"
+  - name: risks
+    description: Risks and mitigations
+    default_value: "API instability → feature flag; network flakiness → retry/backoff"

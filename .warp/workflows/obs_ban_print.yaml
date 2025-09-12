@@ -1,0 +1,4 @@
+name: "Obs: Ban print() in production"
+description: "Scan Swift files for print() usages (excluding Tests)"
+tags: ["observability", "lint"]
+command: "rg -n --glob '!**/*Tests.swift' '\\bprint\\s*\\(' Sources || echo 'No print() found'"

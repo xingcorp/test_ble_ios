@@ -1,0 +1,8 @@
+name: "Snippet: OSLog Signpost"
+description: "Generate OSLog signpost interval code"
+tags: ["observability", "snippet"]
+command: |
+  cat <<'SNIPPET'
+  let signpostID = Signpost.begin("feature_work")
+  defer { Signpost.end("feature_work", id: signpostID) }
+  SNIPPET

@@ -1,0 +1,9 @@
+name: "Perf: TTI Signpost Template"
+description: "Generate Time-To-Interactive measurement code"
+tags: ["observability", "perf", "snippet"]
+command: |
+  cat <<'SNIPPET'
+  let start = Signpost.begin("first_paint")
+  // render UI components
+  defer { Signpost.end("first_paint", id: start) }
+  SNIPPET

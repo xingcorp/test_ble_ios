@@ -1,0 +1,11 @@
+name: "Net: Quality Gates Checklist"
+description: "Display networking quality gates checklist"
+tags: ["networking", "ios", "quality"]
+command: |
+  cat <<'CHECKLIST'
+  ✅ URLSession + async/await + waitsForConnectivity
+  ✅ Interceptors: Auth → Idempotency → Retry(backoff+jitter) → Cache(URLCache/ETag) → Metrics/Trace → Logging(OSLog)
+  ✅ BackgroundSession; NWPathMonitor; HTTP/3 fallback H2/H1
+  ✅ Error taxonomy: Network/Domain/Persistence; UI sees mapped domain errors only
+  ✅ ATS on; no tokens/PII in logs; pinning where required
+  CHECKLIST

@@ -1,0 +1,4 @@
+name: "Test Simple Workflow"
+description: "Simple test workflow to verify Warp integration"
+command: "echo 'Hello from Warp Workflow!'"
+tags: ["test"]

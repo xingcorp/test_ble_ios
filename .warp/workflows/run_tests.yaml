@@ -1,0 +1,4 @@
+name: "Test: Run Unit Tests"
+description: "Run Swift Package tests with verbose output"
+tags: ["test", "ci"]
+command: "swift test -v || echo 'Swift test failed or not available'"

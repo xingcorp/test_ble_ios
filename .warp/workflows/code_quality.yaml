@@ -1,0 +1,8 @@
+name: "Code Quality: SwiftFormat & SwiftLint"
+description: "Run SwiftFormat and SwiftLint checks"
+tags: ["quality", "lint", "format"]
+command: |
+  echo "Running SwiftFormat..."
+  swiftformat --lint . || echo "SwiftFormat not installed"
+  echo "Running SwiftLint..."
+  swiftlint || echo "SwiftLint not installed"

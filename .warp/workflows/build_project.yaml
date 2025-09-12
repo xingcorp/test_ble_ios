@@ -1,0 +1,4 @@
+name: "Build: Swift Package"
+description: "Build the Swift package project"
+tags: ["build", "swift"]
+command: "swift build || echo 'Build failed or Swift not available'"

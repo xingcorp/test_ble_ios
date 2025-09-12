@@ -1,0 +1,8 @@
+name: "Snippet: MetricKit Bootstrap"
+description: "Generate MetricKit startup code"
+tags: ["observability", "snippet"]
+command: |
+  cat <<'SNIPPET'
+  MetricKitManager.shared.start()
+  Log.app.info("MetricKit started")
+  SNIPPET

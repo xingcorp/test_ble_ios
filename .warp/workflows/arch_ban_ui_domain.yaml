@@ -1,0 +1,4 @@
+name: "Arch: Ban UI in Domain"
+description: "Domain layer must not import UIKit/SwiftUI"
+tags: ["architecture", "clean-arch"]
+command: "rg -n '^import\\s+(UIKit|SwiftUI)\\b' Sources/Core/Domain || echo 'No UI imports in Domain'"

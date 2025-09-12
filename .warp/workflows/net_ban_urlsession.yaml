@@ -1,0 +1,4 @@
+name: "Net: Ban direct URLSession"
+description: "Forbid URLSession usage outside Core/Networking module"
+tags: ["networking", "arch-guard"]
+command: "rg -n --glob '!**/Networking/**' 'URLSession\\s*\\(' Sources || echo 'No violations found'"

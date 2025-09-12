@@ -1,0 +1,16 @@
+name: "Arch: Validate All Rules"
+description: "Run all architecture guards and fail if violations found"
+tags: ["architecture", "clean-arch", "ci"]
+command: |
+  set -e
+  echo "[1/5] Ban UI import in Domain"
+  rg -n '^import\s+(UIKit|SwiftUI)\b' Sources/Core/Domain && exit 1 || true
+  echo "[2/5] Ban direct URLSession outside Networking"
+  rg -n --glob '!**/Networking/**' 'URLSession\s*\(' Sources && exit 1 || true
+  echo "[3/5] Ban networking in Presentation"
+  rg -n --glob 'Sources/Features/**' '(URLSession\s*\(|HTTPClient\s*\()' && exit 1 || true
+  echo "[4/5] Ban DTO in UI"
+  rg -n --glob 'Sources/Features/**' '\b\w+DTO\b' && exit 1 || true
+  echo "[5/5] Ban print() in production"
+  rg -n --glob '!**/*Tests.swift' '\bprint\s*\(' Sources && exit 1 || true
+  echo "✅ No violations found"
