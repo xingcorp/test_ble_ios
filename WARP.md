@@ -27,6 +27,37 @@
 - **Memory Management**: Sử dụng weak references để tránh retain cycles
 - **Constants**: Centralize trong `Sources/Core/Constants/`
 
+### 🎯 Naming Conventions (CRITICAL - Always Apply)
+
+#### Architecture Pattern Naming
+```swift
+// ✅ REQUIRED - Use these patterns exclusively
+class LocationCoordinator { }           // NOT LocationManager
+class BeaconCoordinator { }            // NOT BeaconManager
+class UserRepository { }               // NOT UserService
+class NetworkClient { }                // NOT NetworkManager
+class LocationProvider { }             // NOT LocationService
+class CoreLocationFacade { }           // NOT UnifiedLocationService
+```
+
+#### Forbidden Patterns (NEVER USE)
+```swift
+// ❌ BANNED - These violate our standards
+class LocationManager { }              // Use LocationCoordinator
+class BeaconManager { }                // Use BeaconCoordinator
+class DataService { }                  // Use DataRepository
+class UserHelper { }                   // Use UserProvider
+class UtilityClass { }                 // Use specific purpose name
+class UnifiedLocationService { }       // Use LocationCoordinator
+```
+
+#### Quality Standards
+- **Clarity over Cleverness**: Names must explain purpose immediately
+- **Domain Language**: Use BLE/iOS terminology correctly
+- **Consistent Vocabulary**: Same terms throughout codebase
+- **No Buzzwords**: Avoid "Smart", "Advanced", "Enhanced", "Unified"
+- **Pronounceable**: Must be speakable in team meetings
+
 ### iOS-Specific Best Practices
 - **Background Processing**: Sử dụng BGTaskScheduler cho background tasks
 - **Core Location**: Implement proper region monitoring với error handling
