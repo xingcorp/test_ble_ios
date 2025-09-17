@@ -49,8 +49,16 @@ public final class UniversalBeaconScanner: NSObject {
     
     /// Start universal scanning
     public func startUniversalScan() {
-        guard CLLocationManager.authorizationStatus() == .authorizedAlways ||
-              CLLocationManager.authorizationStatus() == .authorizedWhenInUse else {
+        #if DEBUG && os(iOS)
+        
+        let authStatus: CLAuthorizationStatus
+        if #available(iOS 14.0, *) {
+            authStatus = locationManager.authorizationStatus
+        } else {
+            authStatus = CLLocationManager.authorizationStatus()
+        }
+        
+        guard authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse else {
             LoggerService.shared.error("Location permission not granted for universal scan", category: .beacon)
             return
         }
@@ -87,10 +95,15 @@ public final class UniversalBeaconScanner: NSObject {
         updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
             self?.reportDetectedBeacons()
         }
+        
+        #else
+        LoggerService.shared.warning("⚠️ UniversalBeaconScanner not available (DEBUG + iOS only)", category: .beacon)
+        #endif
     }
     
     /// Stop universal scanning
     public func stopUniversalScan() {
+        #if DEBUG && os(iOS)
         guard isScanning else { return }
         
         LoggerService.shared.info("🛑 Stopping universal beacon scan", category: .beacon)
@@ -115,6 +128,9 @@ public final class UniversalBeaconScanner: NSObject {
         // Final report
         reportDetectedBeacons()
         detectedBeacons.removeAll()
+        #else
+        LoggerService.shared.warning("⚠️ UniversalBeaconScanner.stop not available (DEBUG + iOS only)", category: .beacon)
+        #endif
     }
     
     /// Get current detected beacons
@@ -126,20 +142,21 @@ public final class UniversalBeaconScanner: NSObject {
     
     private func tryWildcardScanning() {
         // Try scanning without UUID (may not work on newer iOS)
-        #if DEBUG
+        #if DEBUG && os(iOS)
         // This is a hack that might work on some iOS versions
         // Create a region without specific UUID constraints
-        if let wildcardRegion = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(
-            NSKeyedArchiver.archivedData(withRootObject: CLBeaconRegion(
-                proximityUUID: UUID(),
+        if let wildcardRegion = try? NSKeyedUnarchiver.unarchivedObject(
+            ofClass: CLBeaconRegion.self,
+            from: NSKeyedArchiver.archivedData(withRootObject: CLBeaconRegion(
+                uuid: UUID(),
                 identifier: "wildcard"
-            ), requiringSecureCoding: false)
-        ) as? CLBeaconRegion {
+            ), requiringSecureCoding: true)
+        ) {
             // Attempt to modify the region to accept any UUID
             // This is undocumented and may not work
             locationManager.startMonitoring(for: wildcardRegion)
         }
-        #endif
+        #endif // DEBUG && os(iOS)
     }
     
     private func reportDetectedBeacons() {
