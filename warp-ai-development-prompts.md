@@ -14,35 +14,108 @@ Bộ prompts này được thiết kế để tối ưu hóa việc sử dụng 
 
 ## 🔧 **MCP SETUP REQUIREMENTS**
 
-### **Required MCP Servers**
+### **Required MCP Servers (Uy Tín & Phổ Biến)**
+
+#### **🎖️ OFFICIAL & ENTERPRISE GRADE**
 ```yaml
-# Codebase Server
-- name: "codebase-server"
-  type: "file-system"
-  access: ["read", "write", "analyze"]
-  
-# Git Server  
-- name: "git-server"
+# GitHub Official (68k+ stars)
+- name: "github-mcp-server"
+  provider: "GitHub Official"
   type: "version-control"
-  access: ["history", "branches", "commits"]
-  
-# Development Tools Server
-- name: "dev-tools-server"
-  type: "tools"
-  access: ["linters", "formatters", "test-runners"]
-  
-# Documentation Server
-- name: "docs-server"
-  type: "knowledge-base"
-  access: ["api-docs", "internal-docs", "standards"]
+  install: "npx @modelcontextprotocol/server-github"
+
+# Filesystem Official (68k+ stars)
+- name: "filesystem-server"
+  provider: "Anthropic Official"
+  type: "file-system"
+  install: "npx @modelcontextprotocol/server-filesystem"
+
+# Git Official (68k+ stars)
+- name: "git-server"
+  provider: "Anthropic Official"
+  type: "version-control"
+  install: "uvx mcp-server-git"
 ```
 
-### **Connection Verification**
+#### **🏆 COMMUNITY FAVORITES (High Stars)**
+```yaml
+# Brave Search (Popular web search)
+- name: "brave-search"
+  provider: "Anthropic Official"
+  stars: "68k+"
+  install: "npx @modelcontextprotocol/server-brave-search"
+
+# PostgreSQL (Database access)
+- name: "postgres-server"
+  provider: "Anthropic Official"
+  stars: "68k+"
+  install: "npx @modelcontextprotocol/server-postgres"
+
+# Fetch (Web content)
+- name: "fetch-server"
+  provider: "Anthropic Official"
+  stars: "68k+"
+  install: "uvx mcp-server-fetch"
+```
+
+#### **🚀 DEVELOPMENT FOCUSED**
+```yaml
+# Sourcerer (Code search & navigation)
+- name: "sourcerer"
+  provider: "Community"
+  stars: "High popularity"
+  install: "npm install -g sourcerer-mcp"
+
+# Shell Commands (Secure execution)
+- name: "shell-server"
+  provider: "Community"
+  stars: "Very popular"
+  install: "npm install -g shell-mcp-server"
+```
+
+### **Connection Setup & Verification**
 ```bash
-# Verify MCP connections before starting
+# Install popular MCP servers
+npx @modelcontextprotocol/server-github
+npx @modelcontextprotocol/server-filesystem /path/to/project
+uvx mcp-server-git --repository /path/to/repo
+npx @modelcontextprotocol/server-brave-search
+
+# Verify connections
 mcp-client list-servers
-mcp-client test-connection codebase-server
+mcp-client test-connection github-mcp-server
+mcp-client test-connection filesystem-server
 mcp-client test-connection git-server
+```
+
+### **Claude Desktop Configuration**
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_token_here"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/project"]
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "/path/to/repo"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -50,45 +123,50 @@ mcp-client test-connection git-server
 ## 🎯 **SCENARIO 1: PHÂN TÍCH PROJECT**
 
 ### **MCP Requirements**
-- ✅ Codebase Server (full access)
-- ✅ Git Server (history access)
-- ✅ Documentation Server (read access)
+- ✅ **GitHub Server** (repository analysis) - `@modelcontextprotocol/server-github`
+- ✅ **Filesystem Server** (project files) - `@modelcontextprotocol/server-filesystem`
+- ✅ **Git Server** (history analysis) - `mcp-server-git`
+- ✅ **Brave Search** (external research) - `@modelcontextprotocol/server-brave-search`
 
 ### **Prompt Template**
 ```
 🔍 **PHÂN TÍCH TOÀN DIỆN PROJECT**
 
 **MCP Integration Setup:**
-1. Kết nối với codebase-server để access project files
-2. Connect git-server để analyze commit history và patterns
-3. Access docs-server để understand existing documentation
+1. Connect **GitHub Server** để access repository data và issues
+2. Connect **Filesystem Server** để scan project structure và files
+3. Connect **Git Server** để analyze commit history và development patterns
+4. Use **Brave Search** để research best practices và similar projects
 
 **Nhiệm vụ chính:**
 Thực hiện phân tích comprehensive project hiện tại với focus vào:
 
-**PHASE 1: ARCHITECTURE ANALYSIS**
-- Sử dụng MCP codebase-server để scan toàn bộ project structure
-- Identify main components, modules, và dependencies
-- Analyze architectural patterns được sử dụng (MVC, MVVM, Clean Architecture, etc.)
-- Map out data flow và component relationships
+**PHASE 1: REPOSITORY & STRUCTURE ANALYSIS**
+- Use **GitHub Server** để fetch repository metadata, issues, PRs, và contributors
+- Use **Filesystem Server** để scan complete project directory structure
+- Identify main components, modules, configuration files, và build scripts
+- Analyze architectural patterns (MVC, MVVM, Clean Architecture, Microservices, etc.)
+- Map component relationships và data flow patterns
 
-**PHASE 2: CODE QUALITY ASSESSMENT**
-- Connect dev-tools-server để run code quality analysis
-- Identify technical debt areas
-- Analyze naming conventions compliance (theo existing rules)
-- Assess test coverage và documentation quality
+**PHASE 2: CODE QUALITY & STANDARDS ASSESSMENT**
+- Analyze code organization, naming conventions, và design patterns
+- Identify technical debt areas và code smells
+- Assess test coverage, documentation quality, và code comments
+- Review dependency management và security practices
+- Check compliance với industry standards và best practices
 
-**PHASE 3: HISTORICAL ANALYSIS**
-- Sử dụng git-server để analyze commit patterns
-- Identify frequently changed files (potential hotspots)
-- Understand development velocity và team patterns
-- Extract lessons learned từ commit messages
+**PHASE 3: DEVELOPMENT HISTORY ANALYSIS**
+- Use **Git Server** để analyze commit history, branching strategies
+- Identify frequently changed files (hotspots) và refactoring patterns
+- Understand development velocity, team collaboration patterns
+- Extract insights từ commit messages và PR descriptions
+- Analyze code review practices và merge patterns
 
-**PHASE 4: DEPENDENCY ANALYSIS**
-- Map external dependencies và their versions
-- Identify potential security vulnerabilities
-- Analyze dependency update patterns
-- Assess impact of major dependencies
+**PHASE 4: EXTERNAL RESEARCH & BENCHMARKING**
+- Use **Brave Search** để research similar projects và industry standards
+- Compare architectural decisions với best practices
+- Identify potential improvements based on community knowledge
+- Research security vulnerabilities và update recommendations
 
 **Expected Output:**
 1. **Architecture Diagram**: Visual representation của system
@@ -103,9 +181,10 @@ Thực hiện phân tích comprehensive project hiện tại với focus vào:
 - [ ] Risk factors identified với mitigation plans
 
 **MCP Validation:**
-- Verify codebase-server provided complete file access
-- Confirm git-server delivered comprehensive history
-- Ensure docs-server contributed to understanding
+- Verify **GitHub Server** provided complete repository insights
+- Confirm **Filesystem Server** scanned all project directories
+- Ensure **Git Server** delivered comprehensive commit history
+- Validate **Brave Search** contributed relevant external knowledge
 ```
 
 ---
@@ -113,33 +192,37 @@ Thực hiện phân tích comprehensive project hiện tại với focus vào:
 ## 🆕 **SCENARIO 2: THÊM TÍNH NĂNG MỚI**
 
 ### **MCP Requirements**
-- ✅ Codebase Server (read/write access)
-- ✅ Git Server (pattern analysis)
-- ✅ Dev Tools Server (code generation)
+- ✅ **Filesystem Server** (read/write access) - `@modelcontextprotocol/server-filesystem`
+- ✅ **GitHub Server** (pattern analysis) - `@modelcontextprotocol/server-github`
+- ✅ **Git Server** (development history) - `mcp-server-git`
+- ✅ **Brave Search** (best practices research) - `@modelcontextprotocol/server-brave-search`
 
 ### **Prompt Template**
 ```
 ⚡ **THÊM TÍNH NĂNG MỚI THEO PATTERN HIỆN TẠI**
 
 **MCP Integration Setup:**
-1. Connect codebase-server để analyze existing patterns
-2. Use git-server để understand feature development history
-3. Access dev-tools-server để ensure code quality
+1. Connect **Filesystem Server** để analyze existing code patterns và structure
+2. Connect **GitHub Server** để study similar features trong repository
+3. Use **Git Server** để understand feature development history và patterns
+4. Use **Brave Search** để research implementation best practices
 
 **Nhiệm vụ chính:**
 Implement tính năng mới [TÊN_TÍNH_NĂNG] following established project patterns.
 
-**PHASE 1: PATTERN RECOGNITION**
-- Sử dụng MCP codebase-server để identify similar existing features
-- Analyze code structure, naming conventions, và architectural patterns
-- Extract reusable templates và boilerplate code
-- Document pattern compliance requirements
+**PHASE 1: PATTERN RECOGNITION & RESEARCH**
+- Use **Filesystem Server** để identify similar existing features trong codebase
+- Use **GitHub Server** để analyze successful feature implementations trong repository
+- Analyze code structure, naming conventions, architectural patterns
+- Use **Brave Search** để research industry best practices cho similar features
+- Extract reusable templates, boilerplate code, và design patterns
 
-**PHASE 2: DESIGN ALIGNMENT**
-- Connect git-server để study how similar features were implemented
-- Identify best practices từ successful feature additions
-- Plan integration points với existing codebase
-- Design API contracts consistent với current patterns
+**PHASE 2: DESIGN ALIGNMENT & PLANNING**
+- Use **Git Server** để study evolution của similar features over time
+- Identify successful implementation patterns từ commit history
+- Plan integration points với existing codebase architecture
+- Design API contracts consistent với current project standards
+- Research potential pitfalls và solutions từ community knowledge
 
 **PHASE 3: IMPLEMENTATION**
 - Generate code templates using identified patterns
