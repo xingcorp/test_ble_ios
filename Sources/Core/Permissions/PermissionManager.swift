@@ -31,28 +31,29 @@ public final class PermissionManager: NSObject {
     
     public weak var delegate: PermissionManagerDelegate?
     
-    private let locationManager = CLLocationManager()
+    private let unifiedService = UnifiedLocationService.shared
     private let notificationCenter = UNUserNotificationCenter.current()
     private var bluetoothManager: CBCentralManager?
     private var bluetoothStatus: PermissionStatus = .notDetermined
     
     public override init() {
         super.init()
-        locationManager.delegate = self
+        // Register as delegate to UnifiedLocationService
+        unifiedService.addLocationDelegate(self)
     }
     
     // MARK: - Location Permission
     
     public func requestLocationPermission() {
-        let status = locationManager.authorizationStatus
+        let status = unifiedService.authorizationStatus
         
         switch status {
         case .notDetermined:
             // First request When In Use
-            locationManager.requestWhenInUseAuthorization()
+            unifiedService.requestWhenInUseAuthorization()
         case .authorizedWhenInUse:
             // Then upgrade to Always
-            locationManager.requestAlwaysAuthorization()
+            unifiedService.requestAlwaysAuthorization()
         case .authorizedAlways:
             Logger.info("Already have Always location permission")
             delegate?.permissionManager(self, didUpdateLocationStatus: .authorized)
@@ -66,7 +67,7 @@ public final class PermissionManager: NSObject {
     }
     
     public func checkLocationStatus() -> PermissionStatus {
-        switch locationManager.authorizationStatus {
+        switch unifiedService.authorizationStatus {
         case .notDetermined:
             return .notDetermined
         case .authorizedAlways:
@@ -185,10 +186,18 @@ public final class PermissionManager: NSObject {
     }
 }
 
-// MARK: - CLLocationManagerDelegate
+// MARK: - UnifiedLocationDelegate
 
-extension PermissionManager: CLLocationManagerDelegate {
-    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+extension PermissionManager: UnifiedLocationDelegate {
+    public func unifiedLocationService(_ service: UnifiedLocationService, didUpdateLocations locations: [CLLocation]) {
+        // Not needed for permission management
+    }
+    
+    public func unifiedLocationService(_ service: UnifiedLocationService, didFailWithError error: Error) {
+        // Not needed for permission management
+    }
+    
+    public func unifiedLocationService(_ service: UnifiedLocationService, didChangeAuthorization status: CLAuthorizationStatus) {
         let permissionStatus: PermissionStatus
         
         switch status {
@@ -198,7 +207,7 @@ extension PermissionManager: CLLocationManagerDelegate {
             permissionStatus = .authorized
         case .authorizedWhenInUse:
             // Request upgrade to Always
-            locationManager.requestAlwaysAuthorization()
+            unifiedService.requestAlwaysAuthorization()
             permissionStatus = .authorized
         case .denied:
             permissionStatus = .denied

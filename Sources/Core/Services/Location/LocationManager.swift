@@ -8,7 +8,7 @@
 import Foundation
 import CoreLocation
 
-/// Concrete implementation of LocationManagerProtocol
+/// Concrete implementation of LocationManagerProtocol using UnifiedLocationService
 public final class LocationManager: NSObject, LocationManagerProtocol {
     
     // MARK: - Singleton
@@ -16,47 +16,31 @@ public final class LocationManager: NSObject, LocationManagerProtocol {
     
     // MARK: - Properties
     
-    private let locationManager: CLLocationManager
-    private var locationContinuation: CheckedContinuation<CLLocation, Error>?
+    private let unifiedService = UnifiedLocationService.shared
     
     // MARK: - Initialization
     
     private override init() {
-        self.locationManager = CLLocationManager()
         super.init()
-        self.locationManager.delegate = self
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        self.locationManager.distanceFilter = 10 // Update every 10 meters
+        
+        // Register as delegate to UnifiedLocationService
+        unifiedService.addLocationDelegate(self)
+        
+        // Configure service
+        unifiedService.desiredAccuracy = kCLLocationAccuracyBest
+        unifiedService.distanceFilter = 10 // Update every 10 meters
+        
+        LoggerService.shared.info("✅ LocationManager initialized with UnifiedLocationService", category: .location)
     }
     
     // MARK: - LocationManagerProtocol
     
     public func requestLocationPermission() {
-        let status = locationManager.authorizationStatus
-        
-        switch status {
-        case .notDetermined:
-            // IMPORTANT: Must request WhenInUse first per Apple guidelines
-            LoggerService.shared.info("📍 Requesting WhenInUse location permission", category: .location)
-            locationManager.requestWhenInUseAuthorization()
-        case .restricted, .denied:
-            LoggerService.shared.warning("Location permission denied or restricted", category: .location)
-        case .authorizedWhenInUse:
-            // Request always authorization for beacon monitoring
-            LoggerService.shared.info("📍 Upgrading to Always location permission for beacon monitoring", category: .location)
-            locationManager.requestAlwaysAuthorization()
-        case .authorizedAlways:
-            LoggerService.shared.info("✅ Location permission already granted (Always)", category: .location)
-        @unknown default:
-            LoggerService.shared.warning("Unknown location authorization status", category: .location)
-        }
+        unifiedService.requestLocationPermission()
     }
     
     public func getCurrentLocation() async throws -> CLLocation {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.locationContinuation = continuation
-            locationManager.requestLocation()
-        }
+        return try await unifiedService.getCurrentLocation()
     }
     
     public func startLocationUpdates() {
@@ -65,53 +49,44 @@ public final class LocationManager: NSObject, LocationManagerProtocol {
             return
         }
         
-        locationManager.startUpdatingLocation()
-        LoggerService.shared.info("Started location updates", category: .location)
+        unifiedService.startUpdatingLocation()
     }
     
     public func stopLocationUpdates() {
-        locationManager.stopUpdatingLocation()
-        LoggerService.shared.info("Stopped location updates", category: .location)
+        unifiedService.stopUpdatingLocation()
     }
     
     public func isLocationServicesEnabled() -> Bool {
-        return CLLocationManager.locationServicesEnabled()
+        return UnifiedLocationService.locationServicesEnabled()
     }
     
     public func getAuthorizationStatus() -> CLAuthorizationStatus {
-        return locationManager.authorizationStatus
+        return unifiedService.authorizationStatus
     }
 }
 
-// MARK: - CLLocationManagerDelegate
+// MARK: - UnifiedLocationDelegate
 
-extension LocationManager: CLLocationManagerDelegate {
+extension LocationManager: UnifiedLocationDelegate {
     
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func unifiedLocationService(_ service: UnifiedLocationService, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
         LoggerService.shared.debug("Location updated: \(location.coordinate.latitude), \(location.coordinate.longitude)", category: .location)
         
-        // If we have a continuation waiting, fulfill it
-        if let continuation = locationContinuation {
-            self.locationContinuation = nil
-            continuation.resume(returning: location)
-        }
+        // Notification for backwards compatibility
+        NotificationCenter.default.post(
+            name: Notification.Name("LocationDidUpdate"),
+            object: nil,
+            userInfo: ["location": location]
+        )
     }
     
-    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        LoggerService.shared.error("Location manager failed", error: error, category: .location)
-        
-        // If we have a continuation waiting, fail it
-        if let continuation = locationContinuation {
-            self.locationContinuation = nil
-            continuation.resume(throwing: error)
-        }
+    public func unifiedLocationService(_ service: UnifiedLocationService, didFailWithError error: Error) {
+        LoggerService.shared.error("Location service failed", error: error, category: .location)
     }
     
-    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        let status = manager.authorizationStatus
-        
+    public func unifiedLocationService(_ service: UnifiedLocationService, didChangeAuthorization status: CLAuthorizationStatus) {
         let statusString: String
         switch status {
         case .notDetermined:

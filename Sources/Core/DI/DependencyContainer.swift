@@ -98,6 +98,11 @@ public extension DependencyContainer {
     static func registerAppDependencies(userId: String) {
         let container = DependencyContainer.shared
         
+        // IMPORTANT: Register UnifiedLocationService first (single CLLocationManager)
+        container.registerSingleton(UnifiedLocationService.self) {
+            UnifiedLocationService.shared
+        }
+        
         // Core Services
         container.registerSingleton(LoggerService.self) {
             LoggerService.shared
