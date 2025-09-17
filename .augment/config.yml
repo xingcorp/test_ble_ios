@@ -1,0 +1,67 @@
+# Augment AI Configuration for Naming Conventions
+# This file configures how Augment AI applies naming rules
+
+naming_enforcement:
+  enabled: true
+  strictness: medium  # low, medium, high
+  auto_suggest: true
+  quality_threshold: 70
+  language_specific: true
+  design_patterns: true
+  team_learning: true
+
+# Rules Configuration
+rules:
+  - file: naming-conventions.md
+    type: always_apply
+    priority: high
+    scope: all
+    languages: [swift, kotlin, typescript, javascript, python]
+  
+  - file: swift-specific-rules.md
+    type: auto
+    priority: medium
+    scope: swift_files
+    languages: [swift]
+
+# Code Generation Settings
+code_generation:
+  apply_naming_rules: true
+  suggest_alternatives: true
+  explain_choices: true
+  context_aware: true
+
+# Code Analysis Settings
+code_analysis:
+  flag_violations: true
+  suggest_improvements: true
+  calculate_quality_scores: true
+  track_consistency: true
+
+# Integration Settings
+integrations:
+  ide_suggestions: true
+  code_completion: true
+  refactoring_hints: true
+  review_comments: true
+
+# Quality Metrics
+quality_metrics:
+  track_scores: true
+  generate_reports: true
+  team_dashboard: true
+  improvement_suggestions: true
+
+# Team Customization
+team_settings:
+  allow_overrides: true
+  custom_vocabulary: true
+  domain_specific_terms: true
+  legacy_compatibility: true
+
+# Feedback Learning
+learning:
+  track_user_corrections: true
+  adapt_to_patterns: true
+  improve_suggestions: true
+  update_rules: false  # Manual approval required

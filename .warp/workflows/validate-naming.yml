@@ -1,0 +1,105 @@
+name: "Validate Project Naming Conventions"
+description: "Check for naming convention violations in Swift codebase"
+command: |
+  echo "🔍 Validating Naming Conventions..."
+  echo "=================================="
+  
+  # Initialize counters
+  violations=0
+  
+  # Check for forbidden Manager pattern
+  echo "📋 Checking for forbidden 'Manager' pattern..."
+  manager_files=$(find Sources -name "*.swift" -exec grep -l "class.*Manager" {} \; 2>/dev/null)
+  if [ ! -z "$manager_files" ]; then
+    echo "❌ Found Manager pattern violations:"
+    echo "$manager_files" | while read file; do
+      echo "   - $file"
+      violations=$((violations + 1))
+    done
+  else
+    echo "✅ No Manager pattern violations found"
+  fi
+  
+  # Check for forbidden Service pattern
+  echo ""
+  echo "📋 Checking for forbidden 'Service' pattern..."
+  service_files=$(find Sources -name "*.swift" -exec grep -l "class.*Service" {} \; 2>/dev/null)
+  if [ ! -z "$service_files" ]; then
+    echo "❌ Found Service pattern violations:"
+    echo "$service_files" | while read file; do
+      echo "   - $file"
+      violations=$((violations + 1))
+    done
+  else
+    echo "✅ No Service pattern violations found"
+  fi
+  
+  # Check for forbidden Helper pattern
+  echo ""
+  echo "📋 Checking for forbidden 'Helper' pattern..."
+  helper_files=$(find Sources -name "*.swift" -exec grep -l "class.*Helper" {} \; 2>/dev/null)
+  if [ ! -z "$helper_files" ]; then
+    echo "❌ Found Helper pattern violations:"
+    echo "$helper_files" | while read file; do
+      echo "   - $file"
+      violations=$((violations + 1))
+    done
+  else
+    echo "✅ No Helper pattern violations found"
+  fi
+  
+  # Check for buzzword pollution
+  echo ""
+  echo "📋 Checking for buzzword pollution..."
+  buzzwords=("Unified" "Enhanced" "Advanced" "Smart" "Intelligent")
+  for buzzword in "${buzzwords[@]}"; do
+    buzzword_files=$(find Sources -name "*.swift" -exec grep -l "class.*$buzzword" {} \; 2>/dev/null)
+    if [ ! -z "$buzzword_files" ]; then
+      echo "❌ Found '$buzzword' buzzword violations:"
+      echo "$buzzword_files" | while read file; do
+        echo "   - $file"
+        violations=$((violations + 1))
+      done
+    fi
+  done
+  
+  # Check for proper architectural patterns
+  echo ""
+  echo "📋 Checking for proper architectural patterns..."
+  coordinator_count=$(find Sources -name "*Coordinator.swift" | wc -l)
+  repository_count=$(find Sources -name "*Repository.swift" | wc -l)
+  provider_count=$(find Sources -name "*Provider.swift" | wc -l)
+  facade_count=$(find Sources -name "*Facade.swift" | wc -l)
+  
+  echo "✅ Found architectural patterns:"
+  echo "   - Coordinators: $coordinator_count files"
+  echo "   - Repositories: $repository_count files"
+  echo "   - Providers: $provider_count files"
+  echo "   - Facades: $facade_count files"
+  
+  # Check file naming consistency
+  echo ""
+  echo "📋 Checking file naming consistency..."
+  inconsistent_files=$(find Sources -name "*.swift" | grep -v -E '^Sources/.*[A-Z][a-zA-Z0-9]*\.swift$')
+  if [ ! -z "$inconsistent_files" ]; then
+    echo "❌ Found file naming inconsistencies:"
+    echo "$inconsistent_files" | while read file; do
+      echo "   - $file (should be PascalCase)"
+      violations=$((violations + 1))
+    done
+  else
+    echo "✅ All Swift files follow PascalCase naming"
+  fi
+  
+  # Summary
+  echo ""
+  echo "=================================="
+  if [ $violations -eq 0 ]; then
+    echo "🎉 All naming conventions are compliant!"
+    echo "✅ Ready for code review and deployment"
+  else
+    echo "⚠️  Found $violations naming violations"
+    echo "🔧 Run 'warp ai suggest-naming-fixes' for suggestions"
+    echo "📚 See WARP.md for naming convention guidelines"
+  fi
+  echo "=================================="

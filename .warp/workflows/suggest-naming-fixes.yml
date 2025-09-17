@@ -1,0 +1,118 @@
+name: "Suggest Naming Convention Fixes"
+description: "Provide specific suggestions for naming convention violations"
+command: |
+  echo "🔧 Naming Convention Fix Suggestions"
+  echo "===================================="
+  
+  # Function to suggest better names
+  suggest_better_name() {
+    local current_name="$1"
+    local file_path="$2"
+    
+    echo "📁 File: $file_path"
+    echo "❌ Current: $current_name"
+    
+    # Suggest based on common patterns
+    case "$current_name" in
+      *Manager)
+        base_name=${current_name%Manager}
+        echo "✅ Suggested: ${base_name}Coordinator (for flow control)"
+        echo "✅ Alternative: ${base_name}Provider (for service provision)"
+        echo "✅ Alternative: ${base_name}Repository (for data access)"
+        ;;
+      *Service)
+        base_name=${current_name%Service}
+        echo "✅ Suggested: ${base_name}Repository (for data access)"
+        echo "✅ Alternative: ${base_name}Client (for network calls)"
+        echo "✅ Alternative: ${base_name}Provider (for service provision)"
+        ;;
+      *Helper)
+        base_name=${current_name%Helper}
+        echo "✅ Suggested: ${base_name}Engine (for processing)"
+        echo "✅ Alternative: ${base_name}Validator (for validation)"
+        echo "✅ Alternative: ${base_name}Formatter (for formatting)"
+        ;;
+      Unified*)
+        base_name=${current_name#Unified}
+        echo "✅ Suggested: ${base_name}Coordinator (remove buzzword)"
+        echo "✅ Alternative: ${base_name}Facade (if wrapping multiple services)"
+        ;;
+      Enhanced*|Advanced*|Smart*)
+        # Remove buzzword prefix
+        base_name=$(echo "$current_name" | sed -E 's/^(Enhanced|Advanced|Smart)//')
+        echo "✅ Suggested: $base_name (remove buzzword)"
+        ;;
+      *)
+        echo "✅ Consider: Add appropriate suffix (Coordinator, Repository, Provider, Facade)"
+        ;;
+    esac
+    echo ""
+  }
+  
+  # Check for Manager violations and suggest fixes
+  echo "🔍 Analyzing Manager pattern violations..."
+  find Sources -name "*.swift" -exec grep -l "class.*Manager" {} \; 2>/dev/null | while read file; do
+    class_names=$(grep -o "class [A-Za-z]*Manager" "$file" | sed 's/class //')
+    for class_name in $class_names; do
+      suggest_better_name "$class_name" "$file"
+    done
+  done
+  
+  # Check for Service violations and suggest fixes
+  echo "🔍 Analyzing Service pattern violations..."
+  find Sources -name "*.swift" -exec grep -l "class.*Service" {} \; 2>/dev/null | while read file; do
+    class_names=$(grep -o "class [A-Za-z]*Service" "$file" | sed 's/class //')
+    for class_name in $class_names; do
+      suggest_better_name "$class_name" "$file"
+    done
+  done
+  
+  # Check for Helper violations and suggest fixes
+  echo "🔍 Analyzing Helper pattern violations..."
+  find Sources -name "*.swift" -exec grep -l "class.*Helper" {} \; 2>/dev/null | while read file; do
+    class_names=$(grep -o "class [A-Za-z]*Helper" "$file" | sed 's/class //')
+    for class_name in $class_names; do
+      suggest_better_name "$class_name" "$file"
+    done
+  done
+  
+  # Check for buzzword violations
+  echo "🔍 Analyzing buzzword violations..."
+  buzzwords=("Unified" "Enhanced" "Advanced" "Smart" "Intelligent")
+  for buzzword in "${buzzwords[@]}"; do
+    find Sources -name "*.swift" -exec grep -l "class.*$buzzword" {} \; 2>/dev/null | while read file; do
+      class_names=$(grep -o "class [A-Za-z]*$buzzword[A-Za-z]*" "$file" | sed 's/class //')
+      for class_name in $class_names; do
+        suggest_better_name "$class_name" "$file"
+      done
+    done
+  done
+  
+  echo "===================================="
+  echo "📚 Naming Convention Guidelines:"
+  echo ""
+  echo "🎯 Architectural Patterns:"
+  echo "   • Coordinator: For navigation and flow control"
+  echo "   • Repository: For data access and persistence"
+  echo "   • Provider: For service provision and dependency injection"
+  echo "   • Facade: For simplifying complex subsystem interfaces"
+  echo "   • Client: For network communication"
+  echo "   • Engine: For processing and business logic"
+  echo ""
+  echo "❌ Avoid These Patterns:"
+  echo "   • Manager (too generic)"
+  echo "   • Service (too generic)"
+  echo "   • Helper (too generic)"
+  echo "   • Utility (too generic)"
+  echo "   • Unified, Enhanced, Advanced (buzzwords)"
+  echo ""
+  echo "📖 For detailed guidelines, see:"
+  echo "   • WARP.md (project-specific rules)"
+  echo "   • .augment/rules/naming-conventions.md (detailed rules)"
+  echo ""
+  echo "🔧 To apply fixes:"
+  echo "   1. Use Xcode refactoring tools (Editor > Refactor > Rename)"
+  echo "   2. Update all references and imports"
+  echo "   3. Update corresponding test files"
+  echo "   4. Run 'warp run validate-naming' to verify fixes"
+  echo "===================================="
