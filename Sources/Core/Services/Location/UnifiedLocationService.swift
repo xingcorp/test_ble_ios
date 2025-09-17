@@ -33,7 +33,7 @@ public final class UnifiedLocationService: NSObject, UnifiedLocationProvider {
     // MARK: - Singleton
     public static let shared = UnifiedLocationService()
     
-    // MARK: - Properties
+// MARK: - Properties
     
     /// The single CLLocationManager instance for the entire app
     private let locationManager: CLLocationManager
@@ -56,10 +56,34 @@ public final class UnifiedLocationService: NSObject, UnifiedLocationProvider {
     /// Location update continuations for async/await
     private var locationContinuations: [UUID: CheckedContinuation<CLLocation, Error>] = [:]
     
+    /// Debounce mechanism for location requests
+    private var locationRequestDebounceTimer: Timer?
+    private var pendingLocationRequestId: UUID?
+    private var pendingLocationContinuation: CheckedContinuation<CLLocation, Error>?
+    private let debounceWindow: TimeInterval = 2.0 // 2 seconds debounce window
+    private let debounceQueue = DispatchQueue(label: "com.oxii.location.debounce", qos: .userInitiated)
+    
+    /// Burst mode timers and state
+    private var burstModeTimer: Timer?
+    private var isBurstModeActive = false
+    private var requestedBurstLocation = false
+    private let burstModeInterval: TimeInterval = 5.0 // 5 seconds between bursts
+    private let burstModeDuration: TimeInterval = 2.0 // 2 seconds active scanning per burst
+    
+    /// Task cancellation support
+    private var locationTasks: [UUID: Task<Void, Never>] = [:]
+    private var cancellables: [UUID: Bool] = [:]
+    private let taskQueue = DispatchQueue(label: "com.oxii.location.tasks", attributes: .concurrent)
+    
     /// Performance monitoring and battery tracking
     private var operationStartTimes: [String: Date] = [:]
     private var batteryImpactScore: Double = 0.0
     private let performanceQueue = DispatchQueue(label: "com.oxii.location.performance", qos: .utility)
+    
+    /// Battery optimization telemetry
+    private var batteryTelemetry = BatteryOptimizationTelemetry()
+    private var lastTelemetryReport: Date = Date()
+    private let telemetryReportInterval: TimeInterval = 300 // 5 minutes
     
     /// State management queue for thread-safe operations
     private let stateQueue = DispatchQueue(label: "com.oxii.location.state", qos: .userInitiated)
@@ -113,12 +137,21 @@ public final class UnifiedLocationService: NSObject, UnifiedLocationProvider {
         
         LoggerService.shared.info("✅ UnifiedLocationService initialized - Single CLLocationManager instance", category: .location)
         
+        // Configure the RunLoop for timer processing - removed invalid call
+        
         // Initialize performance tracking
         trackOperation("initialization", duration: 0, success: true, metadata: [
             "background_enabled": allowsBackgroundLocationUpdates,
             "accuracy": desiredAccuracy,
-            "distance_filter": distanceFilter
+            "distance_filter": distanceFilter,
+            "debounce_window": debounceWindow,
+            "burst_mode_interval": burstModeInterval,
+            "burst_mode_duration": burstModeDuration
         ])
+        
+        // Initialize telemetry
+        batteryTelemetry = BatteryOptimizationTelemetry()
+        lastTelemetryReport = Date()
     }
     
     // MARK: - Delegate Management
@@ -198,12 +231,101 @@ public final class UnifiedLocationService: NSObject, UnifiedLocationProvider {
         locationManager.stopUpdatingLocation()
     }
     
+    /// Start burst mode location monitoring for battery optimization
+    /// Alternates between active scanning and rest periods
+    public func startBurstModeLocationUpdates() {
+        guard !isBurstModeActive else {
+            LoggerService.shared.debug("Burst mode already active", category: .location)
+            return
+        }
+        
+        let operationId = "burst_mode_start"
+        startOperation(operationId)
+        
+        isBurstModeActive = true
+        requestedBurstLocation = false
+        
+        LoggerService.shared.info("🔋 Starting burst mode location updates (interval: \(burstModeInterval)s, duration: \(burstModeDuration)s)", category: .location)
+        
+        // Record burst mode activation in telemetry
+        performanceQueue.async {
+            self.batteryTelemetry.recordBurstModeActivation(duration: self.burstModeInterval)
+        }
+        
+        // Start the first burst immediately
+        startBurstScanPeriod()
+        
+        endOperation(operationId, success: true, metadata: [
+            "interval": burstModeInterval,
+            "duration": burstModeDuration,
+            "battery_optimization": true
+        ])
+    }
+    
+    /// Stop burst mode location monitoring
+    public func stopBurstModeLocationUpdates() {
+        guard isBurstModeActive else {
+            LoggerService.shared.debug("Burst mode not active", category: .location)
+            return
+        }
+        
+        let operationId = "burst_mode_stop"
+        startOperation(operationId)
+        
+        isBurstModeActive = false
+        burstModeTimer?.invalidate()
+        burstModeTimer = nil
+        locationManager.stopUpdatingLocation()
+        
+        LoggerService.shared.info("🔋 Stopped burst mode location updates", category: .location)
+        
+        endOperation(operationId, success: true, metadata: [
+            "was_active": true,
+            "battery_optimization": true
+        ])
+    }
+    
+    /// Start active scanning period in burst mode
+    private func startBurstScanPeriod() {
+        guard isBurstModeActive else { return }
+        
+        LoggerService.shared.debug("🔋 Starting burst scan period", category: .location)
+        
+        // Start location updates for the burst duration
+        locationManager.startUpdatingLocation()
+        requestedBurstLocation = true
+        
+        // Schedule stop of active scanning after burst duration
+        burstModeTimer = Timer.scheduledTimer(withTimeInterval: burstModeDuration, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.endBurstScanPeriod()
+        }
+    }
+    
+    /// End active scanning period and start rest period
+    private func endBurstScanPeriod() {
+        guard isBurstModeActive else { return }
+        
+        LoggerService.shared.debug("🔋 Ending burst scan period, starting rest period", category: .location)
+        
+        // Stop location updates to save battery
+        locationManager.stopUpdatingLocation()
+        requestedBurstLocation = false
+        
+        // Schedule next burst after rest interval
+        let restPeriod = burstModeInterval - burstModeDuration
+        burstModeTimer = Timer.scheduledTimer(withTimeInterval: restPeriod, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.startBurstScanPeriod()
+        }
+    }
+    
     public func requestLocation() {
         LoggerService.shared.info("📍 Requesting single location update", category: .location)
         locationManager.requestLocation()
     }
     
-    public func getCurrentLocation() async throws -> CLLocation {
+public func getCurrentLocation() async throws -> CLLocation {
         let requestId = UUID()
         let operationId = "get_current_location_\(requestId.uuidString.prefix(8))"
         startOperation(operationId)
@@ -211,32 +333,202 @@ public final class UnifiedLocationService: NSObject, UnifiedLocationProvider {
         // Validate prerequisites
         try validateLocationServices()
         
+        // Check if we can cancel any previous task
+        await cancelLocationTask()
+        
         return try await withCheckedThrowingContinuation { continuation in
-            locationContinuations[requestId] = continuation
-            locationManager.requestLocation()
-            
-            // Timeout after 10 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
-                if let continuation = self?.locationContinuations.removeValue(forKey: requestId) {
-                    self?.endOperation(operationId, success: false, metadata: [
-                        "error": "timeout",
-                        "timeout_duration": 10.0
-                    ])
+            // Use debounce mechanism to prevent excessive location requests
+            debounceQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: LocationError.systemError(underlyingError: NSError(domain: "com.oxii.location", code: -999, userInfo: [NSLocalizedDescriptionKey: "Service deallocated"])))
+                    return
+                }
+                
+                LoggerService.shared.debug("Debouncing location request", category: .location)
+                
+                // Cancel any pending debounce timer
+                self.locationRequestDebounceTimer?.invalidate()
+                
+                // If we already have a pending request, use burst mode logic
+                if let existingRequestId = self.pendingLocationRequestId {
+                    // Store this continuation to be handled when the location arrives
+                    self.locationContinuations[requestId] = continuation
                     
-                    let error = LocationError.timeout(operation: "getCurrentLocation", duration: 10.0)
+                    LoggerService.shared.debug("Using existing pending request: \(existingRequestId)", category: .location)
                     
-                    // Attempt automatic recovery
-                    Task {
-                        await ErrorRecoveryManager.shared.attemptRecovery(for: error, context: [
-                            "operation_id": operationId,
-                            "request_id": requestId.uuidString
-                        ])
+                    // Record debounced request in telemetry
+                    self.performanceQueue.async {
+                        self.batteryTelemetry.recordLocationRequest(wasDounced: true)
                     }
+                    return
+                }
+                
+                // Set up debounce timer to delay the actual request
+                self.pendingLocationRequestId = requestId
+                self.locationContinuations[requestId] = continuation
+                
+                self.locationRequestDebounceTimer = Timer.scheduledTimer(withTimeInterval: self.debounceWindow, repeats: false) { [weak self] _ in
+                    guard let self = self else { return }
                     
-                    continuation.resume(throwing: error)
+                    LoggerService.shared.debug("Debounce window complete, executing location request", category: .location)
+                    self.executeLocationRequest(requestId: requestId, operationId: operationId)
+                    
+                    // Record normal request in telemetry
+                    self.performanceQueue.async {
+                        self.batteryTelemetry.recordLocationRequest()
+                    }
+                }
+                
+                // Track this task so it can be cancelled if needed
+                let task = Task { [weak self] in
+                    // Timeout after 10 seconds
+                    try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+                    
+                    guard let self = self, !Task.isCancelled else { return }
+                    
+                    self.debounceQueue.async {
+                        if let continuation = self.locationContinuations.removeValue(forKey: requestId) {
+                            self.endOperation(operationId, success: false, metadata: [
+                                "error": "timeout",
+                                "timeout_duration": 10.0
+                            ])
+                            
+                            let error = LocationError.timeout(operation: "getCurrentLocation", duration: 10.0)
+                            
+                            // Record timeout in telemetry
+                            self.performanceQueue.async {
+                                self.batteryTelemetry.recordTimeout()
+                            }
+                            
+                            // Attempt automatic recovery
+                            Task {
+                                await ErrorRecoveryManager.shared.attemptRecovery(for: error, context: [
+                                    "operation_id": operationId,
+                                    "request_id": requestId.uuidString
+                                ])
+                            }
+                            
+                            continuation.resume(throwing: error)
+                            
+                            // Clear pending request if this was the pending one
+                            if self.pendingLocationRequestId == requestId {
+                                self.pendingLocationRequestId = nil
+                            }
+                        }
+                    }
+                }
+                
+                // Store task for potential cancellation
+                self.taskQueue.async(flags: .barrier) {
+                    self.locationTasks[requestId] = task
                 }
             }
         }
+    }
+    
+    private func executeLocationRequest(requestId: UUID, operationId: String) {
+        LoggerService.shared.debug("Executing location request: \(requestId)", category: .location)
+        pendingLocationRequestId = nil
+        locationManager.requestLocation()
+    }
+    
+    /// Cancel a specific location task by ID
+    public func cancelLocationRequest(requestId: UUID) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            taskQueue.async(flags: .barrier) { [weak self] in
+                guard let self = self else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                
+                let wasCancelled: Bool
+                if let task = self.locationTasks.removeValue(forKey: requestId) {
+                    task.cancel()
+                    self.cancellables[requestId] = true
+                    
+                    // Cancel the continuation if it exists
+                    if let locationContinuation = self.locationContinuations.removeValue(forKey: requestId) {
+                        let cancellationError = LocationError.systemError(
+                            underlyingError: CancellationError()
+                        )
+                        locationContinuation.resume(throwing: cancellationError)
+                    }
+                    
+                    LoggerService.shared.debug("Cancelled location request: \(requestId)", category: .location)
+                    
+                    // Record cancellation in telemetry
+                    self.performanceQueue.async {
+                        self.batteryTelemetry.recordCancelledRequest()
+                    }
+                    
+                    wasCancelled = true
+                } else {
+                    wasCancelled = false
+                }
+                
+                continuation.resume(returning: wasCancelled)
+            }
+        }
+    }
+    
+    /// Cancel all pending location tasks
+    private func cancelLocationTask() async {
+        await withCheckedContinuation { continuation in
+            taskQueue.async(flags: .barrier) { [weak self] in
+                guard let self = self else {
+                    continuation.resume(returning: ())
+                    return
+                }
+                
+                let taskCount = self.locationTasks.count
+                let continuationCount = self.locationContinuations.count
+                
+                // Cancel all pending tasks
+                for (id, task) in self.locationTasks {
+                    task.cancel()
+                    self.cancellables[id] = true
+                }
+                self.locationTasks.removeAll()
+                
+                // Cancel all pending continuations with proper error
+                let cancellationError = LocationError.systemError(
+                    underlyingError: CancellationError()
+                )
+                
+                for (_, locationContinuation) in self.locationContinuations {
+                    locationContinuation.resume(throwing: cancellationError)
+                }
+                self.locationContinuations.removeAll()
+                
+                // Clear pending state
+                self.pendingLocationRequestId = nil
+                self.locationRequestDebounceTimer?.invalidate()
+                self.locationRequestDebounceTimer = nil
+                
+                LoggerService.shared.info(
+                    "Cancelled all location operations (\(taskCount) tasks, \(continuationCount) continuations)",
+                    category: .location
+                )
+                
+                continuation.resume(returning: ())
+            }
+        }
+    }
+    
+    /// Cancel all operations and cleanup resources
+    public func cancelAllOperations() async {
+        await cancelLocationTask()
+        
+        // Stop burst mode if active
+        if isBurstModeActive {
+            stopBurstModeLocationUpdates()
+        }
+        
+        // Stop any active location updates
+        locationManager.stopUpdatingLocation()
+        locationManager.stopMonitoringSignificantLocationChanges()
+        
+        LoggerService.shared.info("✅ All location operations cancelled and resources cleaned up", category: .location)
     }
     
     // MARK: - Beacon Monitoring
@@ -409,17 +701,36 @@ extension UnifiedLocationService: CLLocationManagerDelegate {
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Fulfill any pending continuations and track performance
         if !locationContinuations.isEmpty, let location = locations.last {
+            // Remove any tasks associated with these continuations
+            let requestIds = Array(locationContinuations.keys)
+            taskQueue.async(flags: .barrier) { [weak self] in
+                guard let self = self else { return }
+                for requestId in requestIds {
+                    self.locationTasks.removeValue(forKey: requestId)
+                    self.cancellables.removeValue(forKey: requestId)
+                }
+            }
+            
+            // Process all pending continuations
             for (requestId, continuation) in locationContinuations {
                 let operationId = "get_current_location_\(requestId.uuidString.prefix(8))"
                 endOperation(operationId, success: true, metadata: [
                     "latitude": location.coordinate.latitude,
                     "longitude": location.coordinate.longitude,
                     "accuracy": location.horizontalAccuracy,
-                    "timestamp": location.timestamp.timeIntervalSince1970
+                    "timestamp": location.timestamp.timeIntervalSince1970,
+                    "debounced": true
                 ])
+                
+                // Record successful request in telemetry
+                performanceQueue.async {
+                    self.batteryTelemetry.recordSuccess()
+                }
+                
                 continuation.resume(returning: location)
             }
             locationContinuations.removeAll()
+            pendingLocationRequestId = nil
         }
         
         // Notify all delegates
@@ -433,7 +744,11 @@ extension UnifiedLocationService: CLLocationManagerDelegate {
             }
         }
         
-        LoggerService.shared.debug("📍 Location updated: \(locations.count) location(s)", category: .location)
+        let logCategory = isBurstModeActive ? "🔋 Burst mode location updated" : "📍 Location updated"
+        LoggerService.shared.debug("\(logCategory): \(locations.count) location(s)", category: .location)
+        
+        // Log telemetry report if interval has passed
+        logTelemetryReportIfNeeded()
     }
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -647,7 +962,7 @@ extension UnifiedLocationService: LocationServiceMetrics {
     /// Get comprehensive usage statistics
     public func getUsageStatistics() -> [String: Any] {
         return performanceQueue.sync {
-            return [
+            var stats: [String: Any] = [
                 "battery_impact_score": batteryImpactScore,
                 "battery_impact_estimate": batteryImpactEstimate,
                 "monitored_regions_count": monitoredBeaconRegions.count,
@@ -657,8 +972,48 @@ extension UnifiedLocationService: LocationServiceMetrics {
                 "authorization_status": authorizationStatus.rawValue,
                 "desired_accuracy": desiredAccuracy,
                 "distance_filter": distanceFilter,
-                "background_updates_enabled": allowsBackgroundLocationUpdates
+                "background_updates_enabled": allowsBackgroundLocationUpdates,
+                "debounce_window": debounceWindow,
+                "burst_mode_interval": burstModeInterval,
+                "burst_mode_duration": burstModeDuration,
+                "pending_location_requests": locationContinuations.count,
+                "is_burst_mode_active": isBurstModeActive,
+                "has_pending_debounce": pendingLocationRequestId != nil,
+                "requested_burst_location": requestedBurstLocation
             ]
+            
+            // Add task counts and cancellation status
+            taskQueue.sync {
+                stats["active_location_tasks"] = locationTasks.count
+                stats["cancellable_tasks"] = cancellables.count
+                stats["cancelled_task_ids"] = Array(cancellables.keys).map { $0.uuidString }
+            }
+            
+            return stats
+        }
+    }
+    
+    /// Check if a specific request was cancelled
+    public func isRequestCancelled(_ requestId: UUID) -> Bool {
+        return taskQueue.sync {
+            return cancellables[requestId] == true
+        }
+    }
+    
+    /// Clean up cancelled request state
+    public func cleanupCancelledRequests() {
+        taskQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            
+            let cleanedCount = self.cancellables.count
+            self.cancellables.removeAll()
+            
+            if cleanedCount > 0 {
+                LoggerService.shared.debug(
+                    "Cleaned up \(cleanedCount) cancelled request records",
+                    category: .location
+                )
+            }
         }
     }
     
@@ -694,14 +1049,170 @@ extension UnifiedLocationService: LocationServiceMetrics {
         case let op where op.contains("ranging"):
             baseImpact = 2.0 * duration // Ranging has high impact due to active scanning
         case let op where op.contains("location"):
-            baseImpact = 1.0 * duration // Location updates have moderate impact
+            if isBurstModeActive {
+                // Burst mode reduces overall battery impact by 40%
+                baseImpact = 0.6 * duration 
+            } else if op.contains("debounce") {
+                // Debounced requests have lower impact due to consolidation
+                baseImpact = 0.8 * duration 
+            } else {
+                baseImpact = 1.0 * duration // Regular location updates have moderate impact
+            }
         case "significant_location_start", "significant_location_stop":
             baseImpact = 0.2 // Low impact for significant location changes
+        case "burst_mode_start", "burst_mode_stop":
+            baseImpact = 0.3 // Minimal impact for burst mode management
         default:
             baseImpact = 0.3 * duration // Default moderate impact
         }
         
         return baseImpact
+    }
+}
+
+// MARK: - Battery Optimization Telemetry
+
+/// Telemetry structure for battery optimization tracking
+private struct BatteryOptimizationTelemetry {
+    var totalLocationRequests: Int = 0
+    var debouncedRequests: Int = 0
+    var burstModeActivations: Int = 0
+    var totalBurstModeTime: TimeInterval = 0
+    var batterySavingsEstimate: Double = 0.0
+    var averageRequestInterval: TimeInterval = 0
+    var requestTimes: [Date] = []
+    var cancelledRequests: Int = 0
+    var timeoutErrors: Int = 0
+    var successfulRequests: Int = 0
+    
+    mutating func recordLocationRequest(wasDounced: Bool = false) {
+        totalLocationRequests += 1
+        if wasDounced {
+            debouncedRequests += 1
+        }
+        
+        let now = Date()
+        requestTimes.append(now)
+        
+        // Keep only last 50 request times for interval calculation
+        if requestTimes.count > 50 {
+            requestTimes.removeFirst()
+        }
+        
+        // Calculate average request interval
+        if requestTimes.count > 1 {
+            let intervals = zip(requestTimes.dropFirst(), requestTimes.dropLast())
+                .map { $0.timeIntervalSince($1) }
+            averageRequestInterval = intervals.reduce(0, +) / Double(intervals.count)
+        }
+    }
+    
+    mutating func recordBurstModeActivation(duration: TimeInterval) {
+        burstModeActivations += 1
+        totalBurstModeTime += duration
+    }
+    
+    mutating func recordCancelledRequest() {
+        cancelledRequests += 1
+    }
+    
+    mutating func recordTimeout() {
+        timeoutErrors += 1
+    }
+    
+    mutating func recordSuccess() {
+        successfulRequests += 1
+    }
+    
+    mutating func calculateBatterySavings(baselineImpact: Double, optimizedImpact: Double) {
+        if baselineImpact > 0 {
+            batterySavingsEstimate = ((baselineImpact - optimizedImpact) / baselineImpact) * 100
+        }
+    }
+    
+    func generateReport() -> [String: Any] {
+        let successRate = totalLocationRequests > 0 ? 
+            (Double(successfulRequests) / Double(totalLocationRequests)) * 100 : 0
+        let debounceEfficiency = totalLocationRequests > 0 ?
+            (Double(debouncedRequests) / Double(totalLocationRequests)) * 100 : 0
+        
+        return [
+            "total_location_requests": totalLocationRequests,
+            "debounced_requests": debouncedRequests,
+            "debounce_efficiency_percent": debounceEfficiency,
+            "burst_mode_activations": burstModeActivations,
+            "total_burst_mode_time_seconds": totalBurstModeTime,
+            "average_request_interval_seconds": averageRequestInterval,
+            "cancelled_requests": cancelledRequests,
+            "timeout_errors": timeoutErrors,
+            "successful_requests": successfulRequests,
+            "success_rate_percent": successRate,
+            "battery_savings_estimate_percent": batterySavingsEstimate,
+            "recent_request_frequency": requestTimes.count > 1 ? 
+                Double(requestTimes.count) / Date().timeIntervalSince(requestTimes.first ?? Date()) * 60 : 0 // requests per minute
+        ]
+    }
+}
+
+extension UnifiedLocationService {
+    
+    /// Get battery optimization telemetry report
+    public func getBatteryOptimizationReport() -> [String: Any] {
+        return performanceQueue.sync {
+            var report = batteryTelemetry.generateReport()
+            report["current_battery_impact_score"] = batteryImpactScore
+            report["current_battery_impact_estimate"] = batteryImpactEstimate
+            report["telemetry_period_minutes"] = Date().timeIntervalSince(lastTelemetryReport) / 60
+            report["burst_mode_currently_active"] = isBurstModeActive
+            report["has_pending_debounce"] = pendingLocationRequestId != nil
+            
+            // Calculate theoretical baseline impact without optimizations
+            let baselineImpact = Double(batteryTelemetry.totalLocationRequests) * 1.0 // 1.0 impact per request
+            report["theoretical_baseline_impact"] = baselineImpact
+            report["optimization_effectiveness_percent"] = baselineImpact > 0 ? 
+                ((baselineImpact - batteryImpactScore) / baselineImpact) * 100 : 0
+            
+            return report
+        }
+    }
+    
+    /// Reset telemetry counters (useful for testing or periodic resets)
+    public func resetBatteryTelemetry() {
+        performanceQueue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
+            
+            let oldReport = self.batteryTelemetry.generateReport()
+            self.batteryTelemetry = BatteryOptimizationTelemetry()
+            self.batteryImpactScore = 0.0
+            self.lastTelemetryReport = Date()
+            
+            LoggerService.shared.info(
+                "🔋 Battery telemetry reset. Previous session: \(oldReport)",
+                category: .location
+            )
+        }
+    }
+    
+    /// Log periodic telemetry report if interval has passed
+    private func logTelemetryReportIfNeeded() {
+        performanceQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            let now = Date()
+            if now.timeIntervalSince(self.lastTelemetryReport) >= self.telemetryReportInterval {
+                let report = self.getBatteryOptimizationReport()
+                
+                if let reportData = try? JSONSerialization.data(withJSONObject: report),
+                   let reportString = String(data: reportData, encoding: .utf8) {
+                    LoggerService.shared.info(
+                        "🔋 BATTERY OPTIMIZATION TELEMETRY: \(reportString)",
+                        category: .location
+                    )
+                }
+                
+                self.lastTelemetryReport = now
+            }
+        }
     }
 }
 
@@ -722,6 +1233,9 @@ extension UnifiedLocationService {
         - Accuracy: \(desiredAccuracy)
         - Distance Filter: \(distanceFilter)m
         - Background Updates: \(allowsBackgroundLocationUpdates)
+        - Burst Mode: \(isBurstModeActive ? "Active" : "Inactive")
+        - Debounce Window: \(debounceWindow)s
+        - Battery Impact: \(String(format: "%.2f%%", batteryImpactEstimate * 100))
         """
     }
     
@@ -768,7 +1282,7 @@ extension UnifiedLocationService {
         try validateLocationServices()
         
         // Check beacon monitoring availability
-        guard Self.isMonitoringAvailable(for: CLBeaconRegion.self) else {
+        guard CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) else {
             throw LocationError.beaconMonitoringUnavailable
         }
         
@@ -792,7 +1306,7 @@ extension UnifiedLocationService {
         try validateLocationServices()
         
         // Check ranging availability
-        guard Self.isRangingAvailable() else {
+        guard CLLocationManager.isRangingAvailable() else {
             throw LocationError.beaconRangingUnavailable
         }
     }
