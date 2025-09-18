@@ -3,6 +3,7 @@
 //  BeaconAttendance
 //
 //  Created by Senior iOS Team
+//  ARCHITECTURAL FIX: Integrated with UnifiedLocationService to prevent CLLocationManager conflicts
 //
 
 import Foundation
@@ -10,18 +11,20 @@ import CoreLocation
 import CoreBluetooth
 
 /// Universal beacon scanner for debugging - detects ALL beacons
+/// ARCHITECTURAL FIX: Uses centralized UnifiedLocationService to prevent region conflicts
 public final class UniversalBeaconScanner: NSObject {
     
     // MARK: - Singleton
     public static let shared = UniversalBeaconScanner()
     
     // MARK: - Properties
-    private let locationManager = CLLocationManager()
+    private let unifiedLocationService = UnifiedLocationService.shared // FIX: Use centralized service
     private let centralManager: CBCentralManager
     private var isScanning = false
     private var detectedBeacons: [String: DetectedBeacon] = [:]
     private let updateInterval: TimeInterval = 2.0
     private var updateTimer: Timer?
+    private var registeredRegions: [String] = [] // Track our registered regions
     
     // Known iBeacon UUIDs to try
     private let knownUUIDs = [
@@ -42,7 +45,10 @@ public final class UniversalBeaconScanner: NSObject {
     private override init() {
         self.centralManager = CBCentralManager()
         super.init()
-        locationManager.delegate = self
+        // FIX: Register as delegate with centralized service
+        unifiedLocationService.addBeaconDelegate(self)
+        
+        LoggerService.shared.info("✅ UniversalBeaconScanner initialized with centralized UnifiedLocationService", category: .beacon)
     }
     
     // MARK: - Public Methods
@@ -51,45 +57,56 @@ public final class UniversalBeaconScanner: NSObject {
     public func startUniversalScan() {
         #if DEBUG && os(iOS)
         
-        let authStatus: CLAuthorizationStatus
-        if #available(iOS 14.0, *) {
-            authStatus = locationManager.authorizationStatus
-        } else {
-            authStatus = CLLocationManager.authorizationStatus()
-        }
+        // FIX: Use UnifiedLocationService for authorization status
+        let authStatus = unifiedLocationService.authorizationStatus
         
         guard authStatus == .authorizedAlways || authStatus == .authorizedWhenInUse else {
             LoggerService.shared.error("Location permission not granted for universal scan", category: .beacon)
             return
         }
         
-        LoggerService.shared.info("🔍 Starting UNIVERSAL beacon scan", category: .beacon)
+        LoggerService.shared.info("🔍 Starting UNIVERSAL beacon scan via UnifiedLocationService", category: .beacon)
         isScanning = true
         detectedBeacons.removeAll()
+        registeredRegions.removeAll()
         
-        // Try ranging for all known UUIDs
-        for uuidString in knownUUIDs {
+        // Check current region usage to prevent conflicts
+        let currentRegions = unifiedLocationService.monitoredRegions.count
+        LoggerService.shared.info("📡 BEFORE universal scan - Currently monitoring: \(currentRegions) regions", category: .beacon)
+        
+        // Calculate how many regions we can safely add (leave buffer for app regions)
+        let maxUniversalRegions = min(knownUUIDs.count, 20 - currentRegions - 2) // Leave 2 region buffer
+        
+        if maxUniversalRegions <= 0 {
+            LoggerService.shared.error("🚨 Cannot start universal scan - region limit would be exceeded (current: \(currentRegions))", category: .beacon)
+            return
+        }
+        
+        LoggerService.shared.info("📡 Will register \(maxUniversalRegions) universal scan regions", category: .beacon)
+        
+        // Register regions with unique identifiers to prevent conflicts
+        for (index, uuidString) in knownUUIDs.prefix(maxUniversalRegions).enumerated() {
             if let uuid = UUID(uuidString: uuidString) {
+                // Use timestamp to ensure unique identifiers and prevent conflicts with app regions
+                let uniqueIdentifier = "universal_debug_\(Date().timeIntervalSince1970)_\(index)"
                 let region = CLBeaconRegion(
                     uuid: uuid,
-                    identifier: "universal.\(uuidString)"
+                    identifier: uniqueIdentifier
                 )
                 
-                // Start both monitoring and ranging
-                locationManager.startMonitoring(for: region)
+                LoggerService.shared.debug("📡 Creating universal region: ID='\(region.identifier)', UUID=\(region.uuid.uuidString)", category: .beacon)
                 
-                if #available(iOS 13.0, *) {
-                    locationManager.startRangingBeacons(satisfying: region.beaconIdentityConstraint)
-                } else {
-                    locationManager.startRangingBeacons(in: region)
-                }
+                // FIX: Use centralized service to prevent conflicts
+                unifiedLocationService.startMonitoring(for: region)
+                unifiedLocationService.startRangingBeacons(in: region)
                 
-                LoggerService.shared.debug("Scanning for UUID: \(uuidString)", category: .beacon)
+                registeredRegions.append(uniqueIdentifier)
+                
+                LoggerService.shared.debug("🔍 FIX: Scanning for UUID: \(uuidString) with unique ID: \(uniqueIdentifier)", category: .beacon)
             }
         }
         
-        // Also try wildcard region (may not work on all iOS versions)
-        tryWildcardScanning()
+        LoggerService.shared.info("📡 Registered \(registeredRegions.count) universal scan regions", category: .beacon)
         
         // Start update timer
         updateTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
@@ -109,19 +126,24 @@ public final class UniversalBeaconScanner: NSObject {
         LoggerService.shared.info("🛑 Stopping universal beacon scan", category: .beacon)
         isScanning = false
         
-        // Stop all monitoring and ranging
-        for region in locationManager.monitoredRegions {
-            if let beaconRegion = region as? CLBeaconRegion {
-                locationManager.stopMonitoring(for: beaconRegion)
-                
-                if #available(iOS 13.0, *) {
-                    locationManager.stopRangingBeacons(satisfying: beaconRegion.beaconIdentityConstraint)
-                } else {
-                    locationManager.stopRangingBeacons(in: beaconRegion)
+        // FIX: Stop only our registered regions to avoid conflicts
+        for regionId in registeredRegions {
+            // Find and stop our regions
+            let matchingRegions = unifiedLocationService.monitoredRegions.filter { region in
+                region.identifier == regionId
+            }
+            
+            for region in matchingRegions {
+                if let beaconRegion = region as? CLBeaconRegion {
+                    unifiedLocationService.stopMonitoring(for: beaconRegion)
+                    unifiedLocationService.stopRangingBeacons(in: beaconRegion)
+                    
+                    LoggerService.shared.debug("🛑 FIX: Stopped universal scanning for: \(beaconRegion.identifier)", category: .beacon)
                 }
             }
         }
         
+        registeredRegions.removeAll()
         updateTimer?.invalidate()
         updateTimer = nil
         
@@ -140,24 +162,8 @@ public final class UniversalBeaconScanner: NSObject {
     
     // MARK: - Private Methods
     
-    private func tryWildcardScanning() {
-        // Try scanning without UUID (may not work on newer iOS)
-        #if DEBUG && os(iOS)
-        // This is a hack that might work on some iOS versions
-        // Create a region without specific UUID constraints
-        if let wildcardRegion = try? NSKeyedUnarchiver.unarchivedObject(
-            ofClass: CLBeaconRegion.self,
-            from: NSKeyedArchiver.archivedData(withRootObject: CLBeaconRegion(
-                uuid: UUID(),
-                identifier: "wildcard"
-            ), requiringSecureCoding: true)
-        ) {
-            // Attempt to modify the region to accept any UUID
-            // This is undocumented and may not work
-            locationManager.startMonitoring(for: wildcardRegion)
-        }
-        #endif // DEBUG && os(iOS)
-    }
+    // FIX: Remove wildcard scanning as it's problematic and causes conflicts
+    // Wildcard scanning often doesn't work and can cause region limit issues
     
     private func reportDetectedBeacons() {
         let beacons = getDetectedBeacons()
@@ -181,16 +187,36 @@ public final class UniversalBeaconScanner: NSObject {
             // Callback
             onBeaconsDetected?(beacons)
         } else {
-            LoggerService.shared.warning("📡 No beacons detected in universal scan", category: .beacon)
+            LoggerService.shared.warning("📡 No beacons detected in universal scan (\(registeredRegions.count) regions registered)", category: .beacon)
         }
     }
 }
 
-// MARK: - CLLocationManagerDelegate
-extension UniversalBeaconScanner: CLLocationManagerDelegate {
+// MARK: - UnifiedBeaconDelegate (FIX: Use centralized delegate pattern)
+extension UniversalBeaconScanner: UnifiedBeaconDelegate {
     
-    public func locationManager(_ manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
+    public func unifiedLocationService(_ service: UnifiedLocationService, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
         guard isScanning else { return }
+        
+        // Only process callbacks for our registered regions
+        guard registeredRegions.contains(region.identifier) else {
+            // This callback is for another part of the app, ignore it
+            return
+        }
+        
+        // FIX: Comprehensive debug logging with empty identifier check
+        LoggerService.shared.debug("🔍 FIX: UniversalScanner ranging callback via UnifiedLocationService", category: .beacon)
+        LoggerService.shared.debug("📡 Region ID: '\(region.identifier)'", category: .beacon) 
+        LoggerService.shared.debug("📡 Region UUID: \(region.uuid.uuidString)", category: .beacon)
+        LoggerService.shared.debug("📡 Region Major: \(region.major?.stringValue ?? "nil")", category: .beacon)
+        LoggerService.shared.debug("📡 Region Minor: \(region.minor?.stringValue ?? "nil")", category: .beacon)
+        LoggerService.shared.debug("📡 Beacons count: \(beacons.count)", category: .beacon)
+        
+        // FIX: This should no longer happen with consolidated region management
+        if region.identifier.isEmpty {
+            LoggerService.shared.error("🚨 STILL CRITICAL: Region identifier is EMPTY even with fix! Investigate further!", category: .beacon)
+            return
+        }
         
         for beacon in beacons {
             let key = "\(beacon.uuid.uuidString)-\(beacon.major)-\(beacon.minor)"
@@ -208,19 +234,30 @@ extension UniversalBeaconScanner: CLLocationManagerDelegate {
             
             // Log immediately for new beacons
             if detectedBeacons.count == 1 {
-                LoggerService.shared.info("🎯 FIRST BEACON DETECTED: UUID=\(beacon.uuid.uuidString)", category: .beacon)
+                LoggerService.shared.info("🎯 FIX: FIRST BEACON DETECTED by UniversalScanner via UnifiedLocationService: UUID=\(beacon.uuid.uuidString)", category: .beacon)
             }
         }
     }
     
-    public func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        if let beaconRegion = region as? CLBeaconRegion {
-            LoggerService.shared.info("✅ ENTERED region: \(beaconRegion.identifier)", category: .beacon)
-        }
+    public func unifiedLocationService(_ service: UnifiedLocationService, didEnterRegion region: CLBeaconRegion) {
+        // Only process our registered regions
+        guard registeredRegions.contains(region.identifier) else { return }
+        
+        LoggerService.shared.info("✅ FIX: UniversalScanner ENTERED region: \(region.identifier)", category: .beacon)
     }
     
-    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        LoggerService.shared.error("Universal scanner error", error: error, category: .beacon)
+    public func unifiedLocationService(_ service: UnifiedLocationService, didExitRegion region: CLBeaconRegion) {
+        // Only process our registered regions
+        guard registeredRegions.contains(region.identifier) else { return }
+        
+        LoggerService.shared.info("⬅️ FIX: UniversalScanner EXITED region: \(region.identifier)", category: .beacon)
+    }
+    
+    public func unifiedLocationService(_ service: UnifiedLocationService, didDetermineState state: CLRegionState, for region: CLBeaconRegion) {
+        // Only process our registered regions
+        guard registeredRegions.contains(region.identifier) else { return }
+        
+        LoggerService.shared.debug("📊 FIX: UniversalScanner region state: \(region.identifier) -> \(state.rawValue)", category: .beacon)
     }
 }
 

@@ -149,12 +149,28 @@ extension AttendanceCoordinator: BeaconRegionManagerDelegate {
         )
         
         // Create constraint for the site's UUID and major
-        // For now using default UUID - in production, look up from site config
-        let constraint = CLBeaconIdentityConstraint(
-            uuid: SiteRegion.defaultUUID,
-            major: 100 // TODO: Get from site config
-        )
+        // Look up the actual beacon region configuration for this site
+        guard let beaconRegion = regionManager.regions[siteId] else {
+            Logger.error("No beacon region found for site: \(siteId)")
+            return
+        }
         
+        // Create constraint based on actual site configuration
+        let constraint: CLBeaconIdentityConstraint
+        if let major = beaconRegion.major {
+            // Use specific major for this site (best for multi-beacon disambiguation)
+            constraint = CLBeaconIdentityConstraint(
+                uuid: beaconRegion.uuid,
+                major: major.uint16Value
+            )
+            Logger.info("Created ranging constraint with UUID: \(beaconRegion.uuid), Major: \(major)")
+        } else {
+            // UUID-only constraint (less specific, may pick up multiple beacons)
+            constraint = CLBeaconIdentityConstraint(uuid: beaconRegion.uuid)
+            Logger.info("Created ranging constraint with UUID only: \(beaconRegion.uuid)")
+        }
+        
+        // Start ranging with proper constraints for this specific site
         ranger.start(constraints: [constraint], duration: AppConstants.Beacon.rangingDuration)
     }
 }

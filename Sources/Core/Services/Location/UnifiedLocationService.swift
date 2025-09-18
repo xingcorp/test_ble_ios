@@ -539,6 +539,7 @@ public func getCurrentLocation() async throws -> CLLocation {
         
         do {
             try validateBeaconMonitoring()
+            try validateRegionConflicts(for: region)
         } catch let error as LocationError {
             LoggerService.shared.error("Failed to validate beacon monitoring", error: error, category: .beacon)
             endOperation(operationId, success: false, metadata: ["validation_error": error.debugDescription])
@@ -878,6 +879,16 @@ extension UnifiedLocationService: CLLocationManagerDelegate {
     // MARK: Beacon Ranging
     
     public func locationManager(_ manager: CLLocationManager, didRangeBeacons beacons: [CLBeacon], in region: CLBeaconRegion) {
+        // FIX: Critical check for empty identifier before processing
+        if region.identifier.isEmpty {
+            LoggerService.shared.error("🚨 CRITICAL: Empty region identifier detected in ranging callback! This should be impossible after region validation fix.", category: .beacon)
+            LoggerService.shared.error("📡 Region details: UUID=\(region.uuid.uuidString), Major=\(region.major?.stringValue ?? "nil"), Minor=\(region.minor?.stringValue ?? "nil"), Beacons=\(beacons.count)", category: .beacon)
+            return
+        }
+        
+        // Enhanced logging for debugging
+        LoggerService.shared.debug("🔍 UnifiedLocationService ranging: \(region.identifier) with \(beacons.count) beacons", category: .beacon)
+        
         delegateQueue.sync {
             for delegate in beaconDelegates.allObjects {
                 if let beaconDelegate = delegate as? UnifiedBeaconDelegate {
@@ -1297,6 +1308,42 @@ extension UnifiedLocationService {
             throw LocationError.backgroundExecutionDenied
         }
         #endif
+    }
+    
+    /// Validate region conflicts and identifier uniqueness
+    /// - Parameter region: The region to validate
+    /// - Throws: LocationError if validation fails
+    private func validateRegionConflicts(for region: CLBeaconRegion) throws {
+        // Check for empty identifier (major cause of iOS region conflicts)
+        guard !region.identifier.isEmpty else {
+            throw LocationError.invalidConfiguration(reason: "Region identifier cannot be empty")
+        }
+        
+        // Check for identifier conflicts
+        if monitoredBeaconRegions[region.identifier] != nil {
+            LoggerService.shared.warning("⚠️ Region identifier conflict detected: \(region.identifier)", category: .beacon)
+            throw LocationError.invalidConfiguration(reason: "Region identifier '\(region.identifier)' already in use")
+        }
+        
+        // Check for duplicate UUID monitoring (can cause iOS region confusion)
+        let existingRegionsWithSameUUID = monitoredBeaconRegions.values.filter { existingRegion in
+            existingRegion.uuid == region.uuid &&
+            existingRegion.major == region.major &&
+            existingRegion.minor == region.minor
+        }
+        
+        if !existingRegionsWithSameUUID.isEmpty {
+            LoggerService.shared.warning("⚠️ Duplicate region UUID detected: \(region.uuid.uuidString)", category: .beacon)
+            // This is a warning, not a hard error, as some apps may need duplicate UUIDs with different identifiers
+        }
+        
+        // Warn if approaching region limit
+        let currentRegionCount = locationManager.monitoredRegions.count
+        if currentRegionCount >= 18 { // Warn at 18/20 limit
+            LoggerService.shared.warning("⚠️ Approaching iOS region limit: \(currentRegionCount)/20 regions", category: .beacon)
+        }
+        
+        LoggerService.shared.debug("✅ Region validation passed for: \(region.identifier)", category: .beacon)
     }
     
     /// Validate beacon ranging prerequisites
